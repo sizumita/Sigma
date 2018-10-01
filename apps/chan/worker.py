@@ -1,0 +1,247 @@
+from janome.tokenizer import Tokenizer
+import discord
+import datetime
+import re
+from classes.decos import owner_only
+from classes.baseworker import BaseWorker
+import asyncio
+import random
+import pickle
+owner = None
+help_message = """
+```
+すみどらちゃん v1.0.2
+
+こんにちは、すみどらちゃんだよ！discordをより良くするように頑張るので、よろしくですっ！
+すみどらちゃんって呼びかけてくれたら、反応します！よろしくです！
+
+commands:
+
+!trend サーバー内の1日のトレンドが見れます。
+
+```
+"""
+what_to_do = """
+すみどらちゃんって呼びかけてくれたら反応するよ！
+```
+何が出来る？って言ってくれればこれを言うよ！
+
+ニュース見せてって言ったらニュースを見せてあげる！
+
+おみくじって言ってくれればおみくじを引くよ！
+
+[ユーザーが言う言葉](って|と)言ったら[私に言って欲しい言葉](って|と)言って　って言ってくれたら覚えるよ！
+```
+
+"""
+omi = {
+    "大吉": ["今日はいいことがいっぱいあるかも！", "お金拾っちゃったりして？！", "告白すれば必ず叶うよ！"],
+    "中吉": ["今日はいい日になりそう！", "お手伝いすればお金がもらえるかも！", "星に願いを！"],
+    "小吉": ["今日はちょっぴりいいことがあるかも！", "たくさんの人からお礼を言われるかも！", "お参りしてみよう！"],
+    "吉": ["今日は少しいい日かも！", "好きな人からお礼を言われるよ！", "五円のお賽銭をしてみよう！"],
+    "末吉": ["今日は願いが叶うかも！", "好きな人に話しかけられるかも！", "北枕で寝てみよう！"],
+    "凶": ["今日はちょっぴり付いてない日かも...", "お金落としそうだから気をつけて..", "北枕で寝ないように！"],
+    "大凶": ["今日はついてないよ..", "好きな人に嫌われるかも...", "人に媚は使わないように..."],
+}
+what_do_say = re.compile(r"^(.+)(って|と)(言ったら|いったら)(.+)(って|と)(言って|いって).*$")
+
+
+async def omikuzi(message: discord.Message):
+    key = random.choice(list(omi.keys()))
+    kekka = random.choice(omi[key])
+    channel = message.channel
+    await channel.send("おみくじを引くよ...少し待ってて...")
+    await channel.send(f"結果は...\n{key}だって！{kekka}\n今日も1日がんばろう！")
+
+
+class Worker(BaseWorker):
+    def __init__(self, client: discord.Client):
+        super().__init__(client)
+        global owner
+        owner = client.get_user(212513828641046529)
+        self.dic_url = "./apps/chan/data/userdic.csv"
+        self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
+        self.say_b_a = {}
+        try:
+            with open('./apps/chan/data/say.pickle', 'rb') as f:
+                self.say_b_a = pickle.load(f)
+        except:
+            pass
+
+    @owner_only
+    async def reload(self, message: discord.Message):
+        await message.channel.send("リロードします")
+        self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
+        await message.channel.send("リロードしました")
+
+    async def trend(self, message: discord.Message):
+        if message.content.startswith("!trend set"):
+            await self.dicset(message)
+            return True
+        old_now = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+        now = int(old_now.timestamp())
+        msg_channel = message.channel
+        await msg_channel.send("このサーバー~~ですか？全体ですか？~~って言ってください！")
+
+        def check(m):
+            return m.content in ["このサーバー", "全体"] and m.channel == msg_channel and m.author == message.author
+
+        msg = await self.client.wait_for('message', check=check)
+        counter = []
+        solt = []
+        if msg.content == "このサーバー":
+            for channel in message.guild.channels:
+                # channel = discord.TextChannel()
+                if isinstance(channel, (discord.VoiceChannel, discord.CategoryChannel)):
+                    continue
+                if channel.nsfw:
+                    continue
+                # print(channel.name)
+                try:
+                    async for mess in channel.history(after=datetime.datetime.now() - datetime.timedelta(days=1),
+                                                      limit=None):
+                        if mess.content.startswith(("!", ":", "?", ".", "~", "`", "このサーバー")) or mess.author.bot:
+                            continue
+                        text = re.sub(r'https?://[\w/:%#\$&\?\(\)~\.=\+\-…]+', "", mess.content)
+                        text = re.sub(r'```.+```', "", text)
+                        text = re.sub(r'<.+>', "", text)
+                        text = re.sub(r':.+:', "", text)
+                        text = re.sub(r'[!-/:-@[-`{-~]', "", text)
+                        trands = []
+                        for token in self.t.tokenize(text, stream=True):
+                            part_of_speech = token.part_of_speech.split(",")
+                            if part_of_speech[0] in ["名詞", "一般名詞", "固有名詞"]:
+                                if part_of_speech[1] == "代名詞" and part_of_speech[2] == "一般":
+                                    print(token.surface, " -> ", token.part_of_speech)
+                                    continue
+                                if len(token.surface) < 2 or len(set(token.surface)) == 1:
+                                    continue
+                                try:
+                                    b = int(token.surface)
+                                    continue
+                                except:
+                                    pass
+                                trands.append(token.surface)
+                                # print(token.surface)
+                        counter += set(trands)
+                        time = int(mess.created_at.timestamp())
+                        sisu = time - (now - 86400)
+                        # print(sisu)
+                        for x in set(trands):
+                            solt.append((x, sisu))
+                except:
+                    continue
+        elif msg.content == "全体":
+            if not message.author.id == 212513828641046529: return
+            for channel in self.client.get_all_channels():
+                # channel = discord.TextChannel()
+                if isinstance(channel, (discord.VoiceChannel, discord.CategoryChannel)):
+                    continue
+                if channel.nsfw:
+                    continue
+                # print(channel.name)
+                try:
+                    async for mess in channel.history(after=datetime.datetime.utcnow() - datetime.timedelta(days=1),
+                                                      limit=None):
+                        if mess.content.startswith(("!", ":", "?", ".", "~", "`", "このサーバー")) or mess.author.bot:
+                            continue
+                        text = re.sub(r'https?://[\w/:%#\$&\?\(\)~\.=\+\-…]+', "", mess.content)
+                        text = re.sub(r'```.+```', "", text)
+                        text = re.sub(r'<.+>', "", text)
+                        text = re.sub(r':.+:', "", text)
+                        text = re.sub(r'[!-/:-@[-`{-~]', "", text)
+                        trands = []
+                        for token in self.t.tokenize(text, stream=True):
+                            if token.part_of_speech.split(",")[0] in ["名詞", "一般名詞", "固有名詞"]:
+                                if token.part_of_speech.split(",")[1] == "代名詞":
+                                    print(token.surface," -> ",token.part_of_speech)
+                                if len(token.surface) < 2 or len(set(token.surface)) == 1:
+                                    continue
+                                try:
+                                    b = int(token.surface)
+                                    continue
+                                except:
+                                    pass
+                                trands.append(token.surface)
+                                # print(token.surface)
+                        counter += set(trands)
+                        time = int(mess.created_at.timestamp())
+                        sisu = time - now
+                        # print(sisu)
+                        for x in set(trands):
+                            solt.append((x, sisu))
+                except:
+                    continue
+        res = {}
+        for y in solt:
+            if y[0] in res.keys():
+                res[y[0]] += y[1]
+                continue
+            res[y[0]] = y[1]
+        c = sorted(res.items(), key=lambda x: x[1], reverse=True)
+        embed = discord.Embed(title="トレンド", description="ここ1日のトレンドを表示します")
+        ty = ""
+        try:
+            for x in range(20):
+                embed.add_field(name=c[x][0], value=c[x][1])
+        except IndexError:
+            pass
+        for x in range(len(c)):
+            ty += f'{c[x][0]},{c[x][1]}\n'
+        await msg_channel.send(embed=embed)
+        ty += f'{message.guild.name}, {message.guild.id}, len {len(c)}'
+        await owner.send(ty)
+
+    async def command(self, message: discord.Message, command: str, args: list):
+        if command == "!trend":
+            await self.trend(message)
+            return True
+
+    async def on_message(self, message: discord.Message):
+        def pred(m):
+            return m.author == message.author and m.channel == message.channel
+        if message.content == "すみどらちゃん":
+            await message.channel.send("なあに？")
+            try:
+                mess = await self.client.wait_for('message', check=pred, timeout=30)
+            except asyncio.TimeoutError:
+                message.channel.send("用事がないなら帰るね！")
+                return False
+            content = mess.content
+            channel = mess.channel
+            guild = message.guild
+            if re.match("(なに|何)が(できる|出来る)(\?|？)", content):
+                await channel.send(what_to_do)
+                return True
+            if re.search("おみくじ", content):
+                await omikuzi(message)
+                return True
+            if re.search(what_do_say, content):
+                groups = re.search(what_do_say, content).groups()
+                before, after = groups[0], groups[3]
+                if guild.id in self.say_b_a.keys():
+                    self.say_b_a[guild.id][before] = after
+                else:
+                    self.say_b_a[guild.id] = {before: after}
+                await channel.send(f"{before}って言ってたら{after}って言えばいいんだね！私覚えた！")
+            return True
+        try:
+            if message.content in self.say_b_a[message.guild.id]:
+                await message.channel.send(self.say_b_a[message.guild.id][message.content])
+        except KeyError:
+            self.say_b_a[message.guild.id] = {}
+        return True
+
+    async def dicset(self, message: discord.Message):
+        content = message.content.split(",")
+        del content[0]
+        with open(self.dic_url, 'a') as f:
+            f.write(f"{content[1]},{content[2]},{content[3]}\n")
+        await message.channel.send(f"{content[1]},{content[2]},{content[3]}\nとして書き込みました。")
+
+    async def logout(self):
+        with open('./apps/chan/data/say.pickle', mode='wb') as f:
+            pickle.dump(self.say_b_a, f)
+
+
+

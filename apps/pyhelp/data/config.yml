@@ -1,0 +1,3 @@
+description: 'pythonの開発をサポートします。'
+continue: False
+commands: ['!py', '?py']

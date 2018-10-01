@@ -1,0 +1,3 @@
+description: 'Server informationです。サーバーをランキング化したり、紹介を簡単に表示できたりします。'
+continue: True
+commands: ['!si']

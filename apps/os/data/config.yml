@@ -1,0 +1,3 @@
+description: 'Sigma OS main'
+continue: True
+commands: ['!os', '!emoji']
