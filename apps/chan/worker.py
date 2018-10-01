@@ -31,6 +31,10 @@ what_to_do = """
 おみくじって言ってくれればおみくじを引くよ！
 
 [ユーザーが言う言葉](って|と)言ったら[私に言って欲しい言葉](って|と)言って　って言ってくれたら覚えるよ！
+
+このチャンネルで挨拶してって言ったら新しい人に挨拶するようになるよ！
+
+ニックネームを覚えてっていったら他の鯖に入ったときにニックネームを自動的に変えてあげる！
 ```
 
 """
@@ -43,6 +47,12 @@ omi = {
     "凶": ["今日はちょっぴり付いてない日かも...", "お金落としそうだから気をつけて..", "北枕で寝ないように！"],
     "大凶": ["今日はついてないよ..", "好きな人に嫌われるかも...", "人に媚は使わないように..."],
 }
+hello = [
+    "あっ！{user.name}さんだ！よろしく！",
+    "{user.name}さん、このサーバーを楽しんでいってね！",
+    "あのねあのね、{user.name}さんを連れてきたよ！",
+    "ここに伝説の剣士、{user.name}さんがいる！",
+]
 what_do_say = re.compile(r"^(.+)(って|と)(言ったら|いったら)(.+)(って|と)(言って|いって).*$")
 
 
@@ -62,10 +72,22 @@ class Worker(BaseWorker):
         self.dic_url = "./apps/chan/data/userdic.csv"
         self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
         self.say_b_a = {}
+        self.hello_channel_ids = {}
+        self.user_nick = {}
         try:
             with open('./apps/chan/data/say.pickle', 'rb') as f:
                 self.say_b_a = pickle.load(f)
-        except:
+        except (FileNotFoundError, EOFError):
+            pass
+        try:
+            with open('./apps/chan/data/hello.pickle', 'rb') as f:
+                self.hello_channel_ids = pickle.load(f)
+        except (FileNotFoundError, EOFError):
+            pass
+        try:
+            with open('./apps/chan/data/nick.pickle', 'rb') as f:
+                self.hello_channel_ids = pickle.load(f)
+        except (FileNotFoundError, EOFError):
             pass
 
     @owner_only
@@ -198,6 +220,7 @@ class Worker(BaseWorker):
             return True
 
     async def on_message(self, message: discord.Message):
+
         def pred(m):
             return m.author == message.author and m.channel == message.channel
         if message.content == "すみどらちゃん":
@@ -224,6 +247,15 @@ class Worker(BaseWorker):
                 else:
                     self.say_b_a[guild.id] = {before: after}
                 await channel.send(f"{before}って言ってたら{after}って言えばいいんだね！私覚えた！")
+                return True
+            if re.search(".*このチャンネルで(挨拶|あいさつ)して.*", content):
+                self.hello_channel_ids[message.guild.id] = message.channel.id
+                await channel.send("わかった！このチャンネルであいさつするね！")
+                return True
+            if re.search(".*ニックネームを(覚えて|おぼえて).*", content):
+                await channel.send("おっけー！")
+                self.user_nick[message.author.id] = message.author.display_name
+                return True
             return True
         try:
             if message.content in self.say_b_a[message.guild.id]:
@@ -243,5 +275,13 @@ class Worker(BaseWorker):
         with open('./apps/chan/data/say.pickle', mode='wb') as f:
             pickle.dump(self.say_b_a, f)
 
+        with open('./apps/chan/data/hello.pickle', mode='wb') as f:
+            pickle.dump(self.hello_channel_ids, f)
+
+        with open('./apps/chan/data/nick.pickle', mode='wb') as f:
+            pickle.dump(self.user_nick, f)
+
+    async def member_join(self, member: discord.Member):
+        pass
 
 

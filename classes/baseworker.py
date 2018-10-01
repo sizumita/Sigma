@@ -20,3 +20,6 @@ class BaseWorker:
 
     async def logout(self):
         ...
+
+    async def member_join(self, member: discord.Member):
+        ...
