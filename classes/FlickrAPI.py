@@ -1,13 +1,9 @@
 import os
-import sys
-
 import flickrapi
-import pprint
-from urllib.request import urlretrieve
 from os.path import join, dirname
 from dotenv import load_dotenv
 
-dotenv_path = join(dirname(__file__), '.env')
+dotenv_path = join(dirname(__file__), '../../sigma.env')
 load_dotenv(dotenv_path)
 app_id = os.environ.get("APP_ID")
 api_key = os.environ.get("flickr_api_key")

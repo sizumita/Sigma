@@ -8,7 +8,7 @@ from .googleMap import latlng_to_postal_code
 from .kakasi import do_conv2
 import json
 
-dotenv_path = join(dirname(__file__), '.env')
+dotenv_path = join(dirname(__file__), '../../sigma.env')
 load_dotenv(dotenv_path)
 API_KEY = os.environ.get("OW_ID")
 ZIP = '{},JP'

@@ -141,7 +141,7 @@ def shutdown():
 
 client = MyClient()
 
-dotenv_path = join(dirname(__file__), './classes/.env')
+dotenv_path = join(dirname(__file__), '../sigma.env')
 load_dotenv(dotenv_path)
 try:
     client.run(os.environ.get("TOKEN"))

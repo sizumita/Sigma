@@ -6,7 +6,7 @@ import feedparser
 from bs4 import BeautifulSoup
 import discord
 
-dotenv_path = join(dirname(__file__), '.env')
+dotenv_path = join(dirname(__file__), '../../sigma.env')
 load_dotenv(dotenv_path)
 app_id = os.environ.get("APP_ID")
 
