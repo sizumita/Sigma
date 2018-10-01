@@ -5,6 +5,9 @@ import discord
 from classes import User
 from classes import AppManager
 from classes.Systemlogger import logger
+from os.path import join, dirname
+from dotenv import load_dotenv
+
 useing = []
 owners = ["212513828641046529"]
 users = {}
@@ -138,8 +141,10 @@ def shutdown():
 
 client = MyClient()
 
+dotenv_path = join(dirname(__file__), './classes/.env')
+load_dotenv(dotenv_path)
 try:
-    client.run('NDgxNzI3NzQ4MzI3NjA0MjI2.DmviNA.jPHAIXxE7nShCC_IF7RRwh6aHE4')
+    client.run(os.environ.get("TOKEN"))
 
 except:
     shutdown()
