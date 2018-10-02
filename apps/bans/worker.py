@@ -27,6 +27,9 @@ class Worker(BaseWorker):
         def check(m):
             return m.author == message.author and m.channel == message.channel
         if command == ".gban":
+            if not message.author.guild_permissions.administrator:
+                await message.channel.send("あなたにはその権限がありません！")
+                return -1
             user = re.sub("[<@!>]", "", args[0])
             print(user)
             u = [i for i in self.client.get_all_members() if i.id == int(user)][0]
@@ -43,12 +46,8 @@ class Worker(BaseWorker):
             await message.author.ban(reason=reason)
             return True
         if command == ".protect":
-            pex = message.author.guild_permissions
-            for x in pex:
-                if x == ('administrator', True):
-                    break
-                elif x == ('administrator', False):
-                    await message.channel.send("error: あなたには必要な権限がありません！\n必要な権限: Administer")
+            if not message.author.guild_permissions.administrator:
+                await message.channel.send("error: あなたには必要な権限がありません！\n必要な権限: Administer")
             if args[0] == "start":
                 if message.guild.id in self.guilds:
                     await message.channel.send("error: すでに登録されています。")
