@@ -126,8 +126,11 @@ class MyClient(discord.Client):
 
 
 async def check(message: discord.Message):
-    if not message.guild.me.guild_permissions.administrator:
-        return True
+    try:
+        if not message.guild.me.guild_permissions.administrator:
+            return True
+    except:
+        pass
     if message.author.bot:
         return True
     if message.author.id == client.user.id:
