@@ -37,3 +37,6 @@ class logger:
     def read(self, path):
         df = pd.read_csv(path, sep="®", header=None)
         return df
+
+    def send_invite(self, message):
+        pass
