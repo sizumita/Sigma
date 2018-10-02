@@ -117,8 +117,9 @@ class MyClient(discord.Client):
 
     async def sigma_start(self, message: discord.Message):
         # h = self.get_channel(496450097928732672)
-        # users[str(message.author.id)] = User.User(message.author.id, client)
+        users[str(message.author.id)] = User.User(message.author.id, client)
         # await message.channel.send(str(await h.create_invite()))
+
         await self.send(message.channel, f"ユーザーデータのロード完了。\nこんにちは、{message.author.name}さん。")
 
     async def load_os(self, message: discord.Message):
