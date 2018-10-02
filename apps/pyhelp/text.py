@@ -90,6 +90,13 @@ async def event_name(args):
     ...
 ```
 """
+typing = """
+```py
+async with channel.typing():
+    # do expensive stuff here
+    await channel.send('done!')
+```
+"""
 
 
 def get_help_bot(text, flags):
@@ -126,3 +133,5 @@ def get_help(text, flags):
         embed.add_field(name="wait_for", value="-message\nreaction")
         embed.add_field(name="event", value="-all")
         return embed
+    elif text == "typing":
+        return typing

@@ -61,9 +61,6 @@ class AppManager(object):
 
     async def start(self, message: discord.Message):
         content = message.content
-        author = message.author
-        channel = message.channel
-        guild = message.guild
         app_name = re.sub("[sigma ]", "", content, 6)
         if not app_name in self.app_list:
             # await send(channel, "そのようなアプリはありません。")
@@ -119,7 +116,6 @@ class AppManager(object):
     async def member_join(self, member: discord.Member):
         for key, value in self.continue_app.items():
             try:
-                print(2)
                 await value.member_join(member)
             except AttributeError:
                 raise

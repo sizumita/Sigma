@@ -108,7 +108,6 @@ class MyClient(discord.Client):
                     pass
 
     async def on_member_join(self, member: discord.Member):
-        print(1)
         await self.app_manager.member_join(member)
 
     async def send(self, to: discord.TextChannel, message):
