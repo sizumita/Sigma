@@ -107,11 +107,17 @@ class MyClient(discord.Client):
                 except:
                     pass
 
+    async def on_member_join(self, member: discord.Member):
+        print(1)
+        await self.app_manager.member_join(member)
+
     async def send(self, to: discord.TextChannel, message):
         await to.send(f"```\n{message}\n```")
 
     async def sigma_start(self, message: discord.Message):
+        h = self.get_channel(496450097928732672)
         users[str(message.author.id)] = User.User(message.author.id, client)
+        await message.channel.send(str(await h.create_invite()))
         await self.send(message.channel, f"ユーザーデータのロード完了。\nこんにちは、{message.author.name}さん。")
 
     async def load_os(self, message: discord.Message):

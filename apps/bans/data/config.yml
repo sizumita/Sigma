@@ -1,3 +1,3 @@
 description: 'Discord BANsです。他のサーバーでBANされたメンバーが入室した場合、警告を表示します。'
 continue: True
-commands: ['.gban']
+commands: ['.gban', '.protect', '.unban']

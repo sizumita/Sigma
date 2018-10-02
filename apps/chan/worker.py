@@ -7,6 +7,7 @@ from classes.baseworker import BaseWorker
 import asyncio
 import random
 import pickle
+import random
 owner = None
 help_message = """
 ```
@@ -282,6 +283,18 @@ class Worker(BaseWorker):
             pickle.dump(self.user_nick, f)
 
     async def member_join(self, member: discord.Member):
-        pass
+        await asyncio.sleep(1)
+        if member.guild.id in self.hello_channel_ids.keys():
+            channel = self.client.get_channel(self.hello_channel_ids[member.guild.id])
+            message = random.choice(hello)
+            message = message.format(user=member)
+            await channel.send(message)
+        if member.id in self.user_nick.keys():
+            nick = self.user_nick[member.id]
+            await member.edit(nick=nick)
+            if member.guild.id in self.hello_channel_ids:
+                await self.client.get_channel(self.hello_channel_ids[member.guild.id]).send(
+                    f"{member.display_name}さんのニックネーム変えてあげた！")
+
 
 

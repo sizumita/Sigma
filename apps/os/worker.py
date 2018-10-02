@@ -39,6 +39,7 @@ import requests
 from bs4 import BeautifulSoup
 user = {}
 REPORT_CHANNEL = 496115423603851265
+notice_CHANNEL = 494883023339257868
 help_message = """
 ```
 Sigma OS v1.0.0
@@ -126,6 +127,7 @@ class Worker(BaseWorker):
         self.r = requests.get("https://ja.wikipedia.org/wiki/Unicode%E3%81%AEEmoji%E3%81%AE%E4%B8%80%E8%A6%A7")
         self.soup = BeautifulSoup(self.r.text, 'lxml')
         self.report = client.get_channel(REPORT_CHANNEL)
+        self.notice = client.get_channel(notice_CHANNEL)
 
     async def join(self, message: discord.Message):
         # ここにかく
@@ -182,8 +184,16 @@ class Worker(BaseWorker):
                 else:
                     self._last_result = ret
                     await channel.send(f'```py\n{value}{ret}\n```')
+
+        @owner_only
+        async def notice(author: discord.Member, message):
+            text = " ".join(args)
+            await self.notice.send(text)
         channel = message.channel
         author = message.author
+        if command == ".notice":
+            await notice(message.author, message)
+            return True
         if command == "sigma":
             if not args:
                 await channel.send(menu.format(user=message.author))
