@@ -134,7 +134,7 @@ class Worker(BaseWorker):
                             part_of_speech = token.part_of_speech.split(",")
                             if part_of_speech[0] in ["名詞", "一般名詞", "固有名詞"]:
                                 if part_of_speech[1] == "代名詞" and part_of_speech[2] == "一般":
-                                    print(token.surface, " -> ", token.part_of_speech)
+                                    # print(token.surface, " -> ", token.part_of_speech)
                                     continue
                                 if len(token.surface) < 2 or len(set(token.surface)) == 1:
                                     continue
