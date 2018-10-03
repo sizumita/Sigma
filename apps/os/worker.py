@@ -34,7 +34,7 @@ import asyncio
 import io
 import re
 import textwrap
-from contextlib import redirect_stdout
+from contextlib import redirect_stdout, redirect_stderr
 import traceback
 import requests
 from bs4 import BeautifulSoup
@@ -169,6 +169,8 @@ class Worker(BaseWorker):
             try:
                 with redirect_stdout(stdout):
                     ret = await func()
+                with redirect_stderr(stdout):
+                    pass
             except Exception as e:
                 value = stdout.getvalue()
                 await message.channel.send(f'```py\n{value}{traceback.format_exc()}\n```')

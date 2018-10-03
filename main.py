@@ -128,8 +128,8 @@ class MyClient(discord.Client):
     async def on_member_join(self, member: discord.Member):
         await self.app_manager.member_join(member)
 
-    async def on_member_remove(self, member: discord.Member):
-        await self.app_manager
+    # async def on_member_remove(self, member: discord.Member):
+    #     await self.app_manager
 
     async def send(self, to: discord.TextChannel, message):
         await to.send(f"```\n{message}\n```")
