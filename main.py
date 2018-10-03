@@ -29,6 +29,7 @@ class MyClient(discord.Client):
         super().__init__(**options)
         self.logger = None
         self.app_manager = None
+        self.error = None
 
     async def on_ready(self):
         print('Logged in as')
@@ -39,6 +40,7 @@ class MyClient(discord.Client):
         await client.change_presence(activity=discord.Game(name='すみどらちゃん: sigma'))
         self.app_manager = AppManager.AppManager(client)
         self.logger = logger(self)
+        self.error = self.get_channel(497046680806621184)
         await self.app_manager.set_up()
 
     async def on_message(self, message: discord.Message):
@@ -103,7 +105,7 @@ class MyClient(discord.Client):
         except:
             import traceback
             trace = traceback.format_exc()
-            await message.channel.send(trace)
+            await self.error.send(trace)
             useing.remove(message.author.id)
 
         else:
