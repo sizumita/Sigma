@@ -106,7 +106,6 @@ class Worker(BaseWorker):
         if args[0] == "taifu":
             req = requests.get("http://weathernews.jp/s/typhoon/cgi/typhoon_json.fcgi")
             data = req.json()
-            print(data)
             if not data:
                 await message.channel.send("台風情報はありません。")
                 return True

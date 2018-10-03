@@ -237,6 +237,9 @@ class Worker(BaseWorker):
         if command == "!trend":
             await self.trend(message)
             return True
+        if command == "!data":
+            await self.get_data(message)
+            return True
 
     async def on_message(self, message: discord.Message):
 

@@ -100,7 +100,7 @@ class Worker(BaseWorker):
             self.channels.append(message.channel.id)
             self.webhooks.append(webhook.url)
             self.data[webhook.url] = message.channel.id
-            print(self.data)
+            # print(self.data)
             await message.channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels)}")
             return True
         else:
@@ -108,7 +108,7 @@ class Worker(BaseWorker):
             self.channels_r18.append(message.channel.id)
             self.webhooks_r18.append(webhook.url)
             self.data_r18[webhook.url] = message.channel.id
-            print(self.data_r18)
+            # print(self.data_r18)
             await message.channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
             return True
 
