@@ -111,6 +111,7 @@ class Worker(BaseWorker):
             data += f"{key} : {value}\n"
         data += "```"
         await message.author.send(data)
+        return True
 
     @owner_only
     async def reload(self, message: discord.Message):
