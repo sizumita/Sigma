@@ -120,6 +120,13 @@ class AppManager(object):
             except AttributeError:
                 raise
 
+    async def member_remove(self, member: discord.Member):
+        for key, value in self.continue_app.items():
+            try:
+                await value.member_remove(member)
+            except AttributeError:
+                raise
+
     async def catch_command(self, message: discord.Message):
         for x in self.commands:
             if message.content.startswith(x):

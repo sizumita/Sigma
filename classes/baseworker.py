@@ -23,3 +23,6 @@ class BaseWorker:
 
     async def member_join(self, member: discord.Member):
         ...
+
+    async def member_remove(self, member: discord.Member):
+        ...

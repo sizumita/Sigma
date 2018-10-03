@@ -310,5 +310,8 @@ class Worker(BaseWorker):
                 await self.client.get_channel(self.hello_channel_ids[member.guild.id]).send(
                     f"{member.display_name}さんのニックネーム変えてあげた！")
 
-
-
+    async def member_remove(self, member: discord.Member):
+        await asyncio.sleep(1)
+        if member.guild.id in self.hello_channel_ids.keys():
+            channel = self.client.get_channel(self.hello_channel_ids[member.guild.id])
+            await channel.send(f"{member.name}さんが去って行っちゃった...")
