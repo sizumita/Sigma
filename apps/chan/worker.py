@@ -106,7 +106,7 @@ class Worker(BaseWorker):
         await message.author.send(data)
         data = "key : value #nick"
         for key, value in self.say_b_a.items():
-            data += f"{self.client.get_user(key).name} : {value}\n"
+            data += f"{key} : {value}\n"
         await message.author.send(data)
 
     @owner_only
