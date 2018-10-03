@@ -115,31 +115,57 @@ class Worker(BaseWorker):
     async def _send_webhook(self, message: discord.Message, *, is_r18=False):
         if not is_r18:
             content = message.content.replace("@", "＠")
-            if re.search("https://discord.+", content) or content.startswith("!"):
+            if re.search("discord\.gg", content) or content.startswith("!"):
                 return -1
+            embed = None
+            try:
+                if message.attachments:
+                    embed = discord.Embed()
+                    embed.set_image(url=message.attachments[0].url)
+            except:
+                pass
             async with aiohttp.ClientSession() as session:
                 for hook_url in self.webhooks:
                     if self.data[hook_url] == message.channel.id:
                         continue
                     webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
-                    await webhook.send(content + f'\nuserid:{message.author.id}',
-                                       username=f'{message.author.name} id:{self.num}',
-                                       avatar_url=message.author.avatar_url)
+                    if embed:
+                        await webhook.send(content + f'\nuserid:{message.author.id}',
+                                           username=f'{message.author.name} id:{self.num}',
+                                           avatar_url=message.author.avatar_url,
+                                           embed=embed)
+                    else:
+                        await webhook.send(content + f'\nuserid:{message.author.id}',
+                                           username=f'{message.author.name} id:{self.num}',
+                                           avatar_url=message.author.avatar_url)
             self.messages[self.num] = message.content
             self.num += 1
             return True
         else:
             content = message.content.replace("@", "＠")
-            if re.search("https://discord.+", content) or content.startswith("!"):
+            if re.search("discord\.gg", content) or content.startswith("!"):
                 return -1
+            embed = None
+            try:
+                if message.attachments:
+                    embed = discord.Embed()
+                    embed.set_image(url=message.attachments[0].url)
+            except:
+                pass
             async with aiohttp.ClientSession() as session:
                 for hook_url in self.webhooks_r18:
                     if self.data_r18[hook_url] == message.channel.id:
                         continue
                     webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
-                    await webhook.send(content + f'\nuserid:{message.author.id}',
-                                       username=f'{message.author.name} id:{self.num}',
-                                       avatar_url=message.author.avatar_url)
+                    if embed:
+                        await webhook.send(content + f'\nuserid:{message.author.id}',
+                                           username=f'{message.author.name} id:{self.num}',
+                                           avatar_url=message.author.avatar_url,
+                                           embed=embed)
+                    else:
+                        await webhook.send(content + f'\nuserid:{message.author.id}',
+                                           username=f'{message.author.name} id:{self.num}',
+                                           avatar_url=message.author.avatar_url)
             self.messages_r18[self.num_r18] = message.content
             self.num_r18 += 1
             return True

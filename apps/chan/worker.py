@@ -259,45 +259,48 @@ class Worker(BaseWorker):
             content = mess.content
             channel = mess.channel
             guild = message.guild
-            if re.match("(なに|何)が(できる|出来る)(\?|？)", content):
-                await channel.send(what_to_do)
-                return True
-            if re.search("おみくじ", content):
-                await omikuzi(message)
-                return True
-            if re.search(what_do_say, content):
-                groups = re.search(what_do_say, content).groups()
-                before, after = groups[0], groups[3]
-                if guild.id in self.say_b_a.keys():
-                    self.say_b_a[guild.id][before] = after
-                else:
-                    self.say_b_a[guild.id] = {before: after}
-                await channel.send(f"{before}って言ってたら{after}って言えばいいんだね！私覚えた！")
-                return True
-            if re.search(".*このチャンネルで(挨拶|あいさつ)して.*", content):
-                self.hello_channel_ids[message.guild.id] = message.channel.id
-                await channel.send("わかった！このチャンネルであいさつするね！")
-                return True
-            if re.search(".*ニックネーム.*(覚えて|おぼえて).*", content):
-                await channel.send("おっけー！")
-                self.user_nick[message.author.id] = message.author.display_name
-                return True
-            if re.search("なんでもない", content):
-                await channel.send("わかったー")
-                return True
-            if re.search(".*(覚えている|覚えてる|おぼえている|おぼえてる).*(言葉|ことば).*(見せて|みせて).*", content):
-                await channel.send("わかったー\nえーっと...")
-                async with channel.typing():
-                    await asyncio.sleep(2)
-                    dic = self.say_b_a[message.guild.id]
-                    text = "```cpp\nユーザーが言うことば : 返すことば\n"
-                    for key, value in dic.items():
-                        text += f"{key} : {value}"
-                        if len(text) > 1900:
-                            break
-                    await channel.send(text + "\n```")
+
+            async def send_waiting():
+                if re.match("(なに|何)が(できる|出来る)(\?|？)", content):
+                    await channel.send(what_to_do)
                     return True
-            return True
+                if re.search("おみくじ", content):
+                    await omikuzi(message)
+                    return True
+                if re.search(what_do_say, content):
+                    groups = re.search(what_do_say, content).groups()
+                    before, after = groups[0], groups[3]
+                    if guild.id in self.say_b_a.keys():
+                        self.say_b_a[guild.id][before] = after
+                    else:
+                        self.say_b_a[guild.id] = {before: after}
+                    await channel.send(f"{before}って言ってたら{after}って言えばいいんだね！私覚えた！")
+                    return True
+                if re.search(".*このチャンネルで(挨拶|あいさつ)して.*", content):
+                    self.hello_channel_ids[message.guild.id] = message.channel.id
+                    await channel.send("わかった！このチャンネルであいさつするね！")
+                    return True
+                if re.search(".*ニックネーム.*(覚えて|おぼえて).*", content):
+                    await channel.send("おっけー！")
+                    self.user_nick[message.author.id] = message.author.display_name
+                    return True
+                if re.search("なんでもない", content):
+                    await channel.send("わかったー")
+                    return True
+                if re.search(".*(覚えている|覚えてる|おぼえている|おぼえてる).*(言葉|ことば).*(見せて|みせて).*", content):
+                    await channel.send("わかったー\nえーっと...")
+                    async with channel.typing():
+                        await asyncio.sleep(2)
+                        dic = self.say_b_a[message.guild.id]
+                        text = "```cpp\nユーザーが言うことば : 返すことば\n"
+                        for key, value in dic.items():
+                            text += f"{key} : {value}"
+                            if len(text) > 1900:
+                                break
+                        await channel.send(text + "\n```")
+                        return True
+                return True
+            await send_waiting()
         try:
             if message.content in self.say_b_a[message.guild.id]:
                 await message.channel.send(self.say_b_a[message.guild.id][message.content])
