@@ -99,14 +99,17 @@ class Worker(BaseWorker):
         data = "```\nkey : value # say_b_a\n"
         for key, value in self.say_b_a.items():
             data += f"{key} : {value}\n"
+        data += "```"
         await message.author.send(data)
         data = "key : value #hello"
         for key, value in self.hello_channel_ids.items():
             data += f"{self.client.get_guild(key).name} : {self.client.get_channel(value).name}\n"
+        data += "```"
         await message.author.send(data)
         data = "key : value #nick"
         for key, value in self.say_b_a.items():
             data += f"{key} : {value}\n"
+        data += "```"
         await message.author.send(data)
 
     @owner_only
