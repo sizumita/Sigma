@@ -80,7 +80,7 @@ class Worker(BaseWorker):
     async def load(self):
         try:
             async with aiofiles.open('./apps/chan/data/say.pickle', 'rb') as f:
-                self.say_b_a = pickle.loads(await f)
+                self.say_b_a = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
             pass
         try:
