@@ -42,4 +42,4 @@ class logger:
 
     async def send_invite(self, message: discord.Message):
         invite = re.search(".*(discord\.gg/[0-9a-zA-Z]{1,5}).*", message.content).groups()[0]
-        await self.invite_channel.send(f'{invite} datetime:{message.created_at}')
+        await self.invite_channel.send(f'{invite} datetime:{message.created_at} server:{message.guild.name}')
