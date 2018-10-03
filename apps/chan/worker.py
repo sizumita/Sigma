@@ -7,6 +7,7 @@ from classes.baseworker import BaseWorker
 import asyncio
 import pickle
 import random
+import aiofiles
 owner = None
 help_message = """
 ```
@@ -74,21 +75,39 @@ class Worker(BaseWorker):
         self.say_b_a = {}
         self.hello_channel_ids = {}
         self.user_nick = {}
+        client.loop.create_task(self.load())
+
+    async def load(self):
         try:
-            with open('./apps/chan/data/say.pickle', 'rb') as f:
-                self.say_b_a = pickle.load(f)
+            async with aiofiles.open('./apps/chan/data/say.pickle', 'rb') as f:
+                self.say_b_a = pickle.load(await f.read())
         except (FileNotFoundError, EOFError):
             pass
         try:
-            with open('./apps/chan/data/hello.pickle', 'rb') as f:
-                self.hello_channel_ids = pickle.load(f)
+            async with aiofiles.open('./apps/chan/data/hello.pickle', 'rb') as f:
+                self.hello_channel_ids = pickle.load(await f.read())
         except (FileNotFoundError, EOFError):
             pass
         try:
-            with open('./apps/chan/data/nick.pickle', 'rb') as f:
-                self.hello_channel_ids = pickle.load(f)
+            async with aiofiles.open('./apps/chan/data/nick.pickle', 'rb') as f:
+                self.hello_channel_ids = pickle.load(await f.read())
         except (FileNotFoundError, EOFError):
             pass
+
+    @owner_only
+    async def get_data(self, message: discord.Message):
+        data = "```\nkey : value # say_b_a\n"
+        for key, value in self.say_b_a.items():
+            data += f"{key} : {value}\n"
+        await message.author.send(data)
+        data = "key : value #hello"
+        for key, value in self.hello_channel_ids.items():
+            data += f"{self.client.get_guild(key).name} : {self.client.get_channel(value).name}\n"
+        await message.author.send(data)
+        data = "key : value #nick"
+        for key, value in self.say_b_a.items():
+            data += f"{self.client.get_user(key).name} : {value}\n"
+        await message.author.send(data)
 
     @owner_only
     async def reload(self, message: discord.Message):
@@ -223,7 +242,7 @@ class Worker(BaseWorker):
 
         def pred(m):
             return m.author == message.author and m.channel == message.channel
-        if message.content == "すみどらちゃん":
+        if message.content.startswith("すみどらちゃん"):
             await message.channel.send("なあに？")
             try:
                 mess = await self.client.wait_for('message', check=pred, timeout=30)
