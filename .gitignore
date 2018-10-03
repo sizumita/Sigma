@@ -1,6 +1,8 @@
 .env
 *.db
 test.py
+*.pickle
+*.csv
 # Created by https://www.gitignore.io/api/python,pycharm
 
 ### PyCharm ###
