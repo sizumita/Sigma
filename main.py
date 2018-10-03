@@ -46,8 +46,8 @@ class MyClient(discord.Client):
         try:
             if message.attachments and not message.author.bot:
                 await self.logger.send_image(message)
-            elif "discord.gg" in message.content:
-                await self.logger.send_invite(message)
+            # elif "discord.gg" in message.content:
+                # await self.logger.send_invite(message)
         except:
             pass
         try:
