@@ -14,6 +14,14 @@ users = {}
 sessions = {}
 add_point_user = []
 app_path = "./apps/"
+system_ban_id = []
+try:
+    with open('./logs/system_ban.txt', 'w') as f:
+        text = f.read()
+        for x in text.split(','):
+            system_ban_id.append(int(x))
+except:
+    pass
 
 
 class MyClient(discord.Client):
@@ -34,10 +42,11 @@ class MyClient(discord.Client):
         await self.app_manager.set_up()
 
     async def on_message(self, message: discord.Message):
+        global system_ban_id, users, sessions, useing, add_point_user
         try:
             if message.attachments and not message.author.bot:
                 await self.logger.send_image(message)
-            if "discord.gg" in message.content:
+            elif "discord.gg" in message.content:
                 await self.logger.send_invite(message)
         except:
             pass
@@ -60,6 +69,13 @@ class MyClient(discord.Client):
                         if type(app) == int:
                             user = get_user(message.author.id)
                             user.add_point(app)
+                        elif type(app) == str:
+                            if app.startswith("ban "):
+                                user_id = app.split()[1]
+                                system_ban_id.append(int(user_id))
+                            elif app.startswith("unban "):
+                                user_id = app.split()[1]
+                                system_ban_id.remove(int(user_id))
                     return True
 
             if message.content.startswith("sigma"):
@@ -135,6 +151,8 @@ async def check(message: discord.Message):
             return True
     except:
         pass
+    if message.author.id in system_ban_id:
+        return True
     if message.author.bot:
         return True
     if message.author.id == client.user.id:
@@ -152,6 +170,9 @@ def get_user(uid: int) -> User:
 
 
 def shutdown():
+    with open('./logs/system_ban.txt', 'w') as f:
+        text = ",".join([str(i) for i in system_ban_id])
+        f.write(text)
     client.loop.stop()
 
 

@@ -1,9 +1,10 @@
-import csv
+import re
 import discord
 import datetime
 import pandas as pd
 IMAGE_LOG_CHANNEL = 496103461532860416
 COMMAND_LOG_CHANNEL = 495237526743678977
+INVITE_CHANNEL = 496950550106210305
 
 
 class logger:
@@ -13,6 +14,7 @@ class logger:
         self.client = client
         self.image_channel = client.get_channel(IMAGE_LOG_CHANNEL)
         self.command_channel = client.get_channel(COMMAND_LOG_CHANNEL)
+        self.invite_channel = client.get_channel(INVITE_CHANNEL)
 
     async def do_command(self, command, content, author_id, guild_id, channel_id, message: discord.Message):
         data = [command, content, author_id, guild_id, channel_id, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')]
@@ -38,5 +40,6 @@ class logger:
         df = pd.read_csv(path, sep="®", header=None)
         return df
 
-    def send_invite(self, message):
-        pass
+    async def send_invite(self, message):
+        invite = re.search(".*(discord\.gg/[0-9a-zA-Z]{1,5}).*", message.content).groups()[0]
+        await self.invite_channel.send(invite)

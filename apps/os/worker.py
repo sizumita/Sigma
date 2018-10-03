@@ -32,6 +32,7 @@ from classes.decos import owner_only
 import discord
 import asyncio
 import io
+import re
 import textwrap
 from contextlib import redirect_stdout
 import traceback
@@ -226,6 +227,18 @@ class Worker(BaseWorker):
                 await self.report.send(f"{message.author.name}さんからレポート:\n```\n{report}\n```\`id:{message.author.id}")
                 await channel.send("reportありがとうございます。真摯に対応させていただきます。")
                 return True
+            if args[0] == "ban":
+                if author.id != 212513828641046529:
+                    return -5
+                uid = re.sub("[<>?@!]", "", args[1])
+                await channel.send("追加しました。")
+                return "ban " + uid
+            if args[0] == "unban":
+                if author.id != 212513828641046529:
+                    return -5
+                uid = re.sub("[<>?@!]", "", args[1])
+                await channel.send("削除しました。")
+                return "unban " + uid
         if command == "!emoji":
             try:
                 if args[0].startswith('\\u'):
