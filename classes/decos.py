@@ -8,7 +8,7 @@ def owner_only(func):
             author = args[0].author
         elif isinstance(args[0], discord.Member):
             author = args[0]
-        elif issubclass(args[0], BaseWorker):
+        elif isinstance(args[0], BaseWorker):
             author = args[1].author
         else:
             return
