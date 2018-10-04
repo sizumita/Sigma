@@ -181,10 +181,9 @@ class MyClient(discord.Client):
             await channel.send("追加")
             return
         if mess.content == "2":
-            t = "\n".join([i[0] + ":" + i[1] for i in message.guild.me.guild_permissions])
+            t = "\n".join([i[0] + ":" + str(i[1]) for i in message.guild.me.guild_permissions])
             await message.author.send(t)
             return
-
 
 
 async def check(message: discord.Message):
