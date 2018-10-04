@@ -8,7 +8,7 @@ Sigma timer v1.0.0
 commands:
 
 !timer [時間（分）] タイマーをセットします。
-
+```
 """
 timer = {}
 timer_num = 0

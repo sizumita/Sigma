@@ -30,6 +30,7 @@ class MyClient(discord.Client):
         self.logger = None
         self.app_manager = None
         self.error = None
+        self.delete_check = []
 
     async def on_ready(self):
         print('Logged in as')
@@ -52,6 +53,9 @@ class MyClient(discord.Client):
                 # await self.logger.send_invite(message)
         except:
             pass
+        if message.content == "sigma rc" and message.author.id == 212513828641046529:
+            await self.rc(message)
+            return
         try:
             if await check(message):
                 return
@@ -132,6 +136,19 @@ class MyClient(discord.Client):
 
     # async def on_member_remove(self, member: discord.Member):
     #     await self.app_manager
+    async def on_message_delete(self, message: discord.Message):
+        if message.channel.id in self.delete_check:
+            if message.author.id == self.user.id:
+                await message.channel.send(message.content)
+                return
+            text = f"""
+            消されたメッセージ
+            ```
+            {message.author.name} {message.created_at}
+            {message.content}
+            ```
+            """
+            await message.channel.send(text)
 
     async def send(self, to: discord.TextChannel, message):
         await to.send(f"```\n{message}\n```")
@@ -145,6 +162,29 @@ class MyClient(discord.Client):
 
     async def load_os(self, message: discord.Message):
         return await self.app_manager.command(message, 'sigma', 'os')
+
+    async def rc(self, message: discord.Message):
+        channel = message.channel
+        await channel.send("Sigma リカバリーモード　起動\n"
+                           "何をしますか？番号を選んでください。\n"
+                           "1:チャンネルチェック -> 消されたメッセージを再度送信します。\n"
+                           "2:今のpermissionを送ります。")
+
+        def pred(m):
+            return m.author == message.author and m.channel == message.channel
+        try:
+            mess = await self.wait_for('message', check=pred, timeout=30)
+        except asyncio.TimeoutError:
+            return False
+        if mess.content == "1":
+            self.delete_check.append(channel.id)
+            await channel.send("追加")
+            return
+        if mess.content == "2":
+            t = "\n".join([i[0] + ":" + i[1] for i in message.guild.me.guild_permissions])
+            await message.author.send(t)
+            return
+
 
 
 async def check(message: discord.Message):
