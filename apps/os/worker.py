@@ -193,7 +193,8 @@ class Worker(BaseWorker):
         async def command_graph(author: discord.Member, message: discord.Message):
             df = pd.read_csv('./logs/command.csv', header=None, sep="®")
             df_list = df.values.tolist()
-            await author.send(df_list)
+            # await author.send(df_list)
+            print(df_list)
 
         @owner_only
         async def notice(author: discord.Member, message: discord.Message):
