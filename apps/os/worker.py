@@ -37,6 +37,7 @@ import textwrap
 from contextlib import redirect_stdout, redirect_stderr
 import traceback
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup
 user = {}
 REPORT_CHANNEL = 496115423603851265
@@ -189,7 +190,13 @@ class Worker(BaseWorker):
                     await channel.send(f'```py\n{value}{ret}\n```')
 
         @owner_only
-        async def notice(author: discord.Member, message):
+        async def command_graph(author: discord.Member, message: discord.Message):
+            df = pd.read_csv('./logs/command.csv', header=None, sep="®")
+            df_list = df.values.tolist()
+            await author.send(df_list)
+
+        @owner_only
+        async def notice(author: discord.Member, message: discord.Message):
             text = " ".join(args)
             await self.notice.send(text)
         channel = message.channel
@@ -215,6 +222,8 @@ class Worker(BaseWorker):
                 await author.send(embed=contract_e)
                 return True
         if command == "!os":
+            if args[0] == "com_logs":
+                await command_graph(message.author, message)
             if args[0] == "eval":
                 await my_eval(message.author, message)
                 return True

@@ -166,7 +166,7 @@ class Worker(BaseWorker):
                         await webhook.send(content + f'\nuserid:{message.author.id}',
                                            username=f'{message.author.name} id:{self.num}',
                                            avatar_url=message.author.avatar_url)
-            self.messages_r18[self.num_r18] = message.content
+            self.messages_r18[self.num_r18] = (message.embeds[0], message.author.id)
             self.num_r18 += 1
             return True
 
