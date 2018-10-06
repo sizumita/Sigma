@@ -39,6 +39,7 @@ import traceback
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
+from classes.math.Graph import pie_chart
 user = {}
 REPORT_CHANNEL = 496115423603851265
 notice_CHANNEL = 494883023339257868
@@ -193,8 +194,22 @@ class Worker(BaseWorker):
         async def command_graph(author: discord.Member, message: discord.Message):
             df = pd.read_csv('./logs/command.csv', header=None, sep="®")
             df_list = df.values.tolist()
-            # await author.send(df_list)
-            print(df_list)
+            df_col_datas = {}
+            # ['sigma', 'sigma globalchat', 3.5239478444032e+17, 4.448176198628147e+17, '477080222286479397',
+            #  '2018-10-06 13:19:03']
+            for data in df_list:
+                if data[0] in df_col_datas.keys():
+                    df_col_datas[data[0]] += 1
+                    continue
+                df_col_datas[data[0]] = 1
+            col = []
+            data = []
+            for key, value in df_col_datas.items():
+                col.append(key)
+                data.append(value)
+            pie_chart(data, col, "./apps/os/data/command.png")
+            file = discord.File("./apps/os/data/command.png")
+            await message.channel.send("app 使用率のグラフです。", file=file)
 
         @owner_only
         async def notice(author: discord.Member, message: discord.Message):
