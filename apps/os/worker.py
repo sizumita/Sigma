@@ -205,6 +205,7 @@ class Worker(BaseWorker):
                 df_col_datas[data[0]] = 1
             col = []
             data = []
+            await message.channel.send(df_col_datas)
             for key, value in df_col_datas.items():
                 col.append(key)
                 data.append(value)
