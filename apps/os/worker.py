@@ -198,6 +198,7 @@ class Worker(BaseWorker):
             # ['sigma', 'sigma globalchat', 3.5239478444032e+17, 4.448176198628147e+17, '477080222286479397',
             #  '2018-10-06 13:19:03']
             for data in df_list:
+                print(data[0])
                 if data[0] in df_col_datas.keys():
                     df_col_datas[data[0]] += 1
                     continue
