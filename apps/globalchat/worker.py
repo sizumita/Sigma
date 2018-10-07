@@ -48,7 +48,7 @@ class Worker(BaseWorker):
         self.data_r18 = {}
         super().__init__(client)
         try:
-            with open('./apps/globalchat/data/global.pickle', mode='rb') as f:
+            with open('./pickles/global.pickle', mode='rb') as f:
                 for key, value in pickle.load(f).items():
                     self.channels.append(value)
                     self.webhooks.append(key)
@@ -58,7 +58,7 @@ class Worker(BaseWorker):
         except EOFError:
             pass
         try:
-            with open('./apps/globalchat/data/global-r18.pickle', mode='rb') as f:
+            with open('./pickles/global-r18.pickle', mode='rb') as f:
                 for key, value in pickle.load(f).items():
                     self.channels_r18.append(value)
                     self.webhooks_r18.append(key)
@@ -87,9 +87,9 @@ class Worker(BaseWorker):
             return True
 
     async def logout(self):
-        with open('./apps/globalchat/data/global.pickle', mode='wb') as f:
+        with open('./pickles/global.pickle', mode='wb') as f:
             pickle.dump(self.data, f)
-        with open('./apps/globalchat/data/global-r18.pickle', mode='wb') as f:
+        with open('./pickles/global-r18.pickle', mode='wb') as f:
             pickle.dump(self.data_r18, f)
 
     async def command(self, message: discord.Message, command: str, args: list):
