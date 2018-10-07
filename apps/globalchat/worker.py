@@ -202,10 +202,10 @@ class Worker(BaseWorker):
                     if channel.name == "global-chat":
                         if message.channel.id in self.channels:
                             continue
-                        if channel.webhooks():
+                        if await channel.webhooks():
                             self.channels.append(channel.id)
-                            self.webhooks.append(channel.webhooks()[0].url)
-                            self.data[channel.webhooks()[0].url] = channel.id
+                            self.webhooks.append(await channel.webhooks()[0].url)
+                            self.data[await channel.webhooks()[0].url] = channel.id
                             await channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels)}")
                             continue
                         webhook = await channel.create_webhook(name="global-chat")
@@ -217,10 +217,10 @@ class Worker(BaseWorker):
                     if channel.name == "global-r18":
                         if message.channel.id in self.channels_r18:
                             continue
-                        if channel.webhooks():
+                        if await channel.webhooks():
                             self.channels_r18.append(channel.id)
-                            self.webhooks_r18.append(channel.webhooks()[0].url)
-                            self.data_r18[channel.webhooks()[0].url] = channel.id
+                            self.webhooks_r18.append(await channel.webhooks()[0].url)
+                            self.data_r18[await channel.webhooks()[0].url] = channel.id
                             await channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
                             continue
                         webhook = await channel.create_webhook(name="global-chat")
