@@ -198,33 +198,36 @@ class Worker(BaseWorker):
     async def auto_connect(self, message: discord.Message):
         for guild in self.client.guilds:
             for channel in guild.channels:
-                if channel.name == "global-chat":
-                    if message.channel.id in self.channels:
-                        continue
-                    if channel.webhooks():
+                try:
+                    if channel.name == "global-chat":
+                        if message.channel.id in self.channels:
+                            continue
+                        if channel.webhooks():
+                            self.channels.append(channel.id)
+                            self.webhooks.append(channel.webhooks()[0].url)
+                            self.data[channel.webhooks()[0].url] = channel.id
+                            await channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels)}")
+                            continue
+                        webhook = await channel.create_webhook(name="global-chat")
                         self.channels.append(channel.id)
-                        self.webhooks.append(channel.webhooks()[0].url)
-                        self.data[channel.webhooks()[0].url] = channel.id
+                        self.webhooks.append(webhook.url)
+                        self.data[webhook.url] = channel.id
                         await channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels)}")
-                        continue
-                    webhook = await channel.create_webhook(name="global-chat")
-                    self.channels.append(channel.id)
-                    self.webhooks.append(webhook.url)
-                    self.data[webhook.url] = channel.id
-                    await channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels)}")
-                    return True
-                if channel.name == "global-r18":
-                    if message.channel.id in self.channels_r18:
-                        continue
-                    if channel.webhooks():
+                        return True
+                    if channel.name == "global-r18":
+                        if message.channel.id in self.channels_r18:
+                            continue
+                        if channel.webhooks():
+                            self.channels_r18.append(channel.id)
+                            self.webhooks_r18.append(channel.webhooks()[0].url)
+                            self.data_r18[channel.webhooks()[0].url] = channel.id
+                            await channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
+                            continue
+                        webhook = await channel.create_webhook(name="global-chat")
                         self.channels_r18.append(channel.id)
-                        self.webhooks_r18.append(channel.webhooks()[0].url)
-                        self.data_r18[channel.webhooks()[0].url] = channel.id
+                        self.webhooks_r18.append(webhook.url)
+                        self.data_r18[webhook.url] = channel.id
                         await channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
-                        continue
-                    webhook = await channel.create_webhook(name="global-chat")
-                    self.channels_r18.append(channel.id)
-                    self.webhooks_r18.append(webhook.url)
-                    self.data_r18[webhook.url] = channel.id
-                    await channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
-                    return True
+                        return True
+                except:
+                    pass
