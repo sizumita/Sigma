@@ -106,6 +106,8 @@ class Worker(BaseWorker):
                 text = ""
                 for x in self.channels:
                     channel = self.client.get_channel(x)
+                    if not channel:
+                        continue
                     text += f'global-chat on {channel.guild.name}\n'
                 await message.channel.send(text)
                 return True
