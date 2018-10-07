@@ -198,6 +198,7 @@ class Worker(BaseWorker):
     async def auto_connect(self, message: discord.Message):
         for guild in self.client.guilds:
             for channel in guild.channels:
+                print(channel.name)
                 try:
                     if channel.name == "global-chat":
                         if message.channel.id in self.channels:
