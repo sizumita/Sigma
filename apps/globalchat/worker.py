@@ -22,12 +22,16 @@ commands(owner only):
 
 
 @owner_only
-async def delete_message(author, delete_text: str, channels: list, client: discord.Client):
+async def delete_message(author, delete_text: str, delete_dict: str,  channels: list, client: discord.Client):
     channel = list(map(lambda x: client.get_channel(x), channels))
     for ch in channel:
         async for mess in ch.history():
-            if mess.content == delete_text:
-                await mess.delete()
+            if mess.embeds:
+                if mess.embeds[0].to_dict() == delete_dict:
+                    await mess.delete()
+            else:
+                if delete_text in mess.content:
+                    await mess.delete()
 
 
 class Worker(BaseWorker):
@@ -89,10 +93,23 @@ class Worker(BaseWorker):
             pickle.dump(self.data_r18, f)
 
     async def command(self, message: discord.Message, command: str, args: list):
-        if args[0] == "delete":
-            delete_text = self.messages[int(args[1])]
-            await delete_message(message.author, delete_text, self.channels, self.client)
-            return True
+        if command == "!global":
+            if args[0] == "delete":
+                delete_text = self.messages[int(args[1])]['content']
+                delete_dict = self.messages[int(args[1])]['embed']
+                await delete_message(message.author, delete_text, delete_dict, self.channels, self.client)
+                return True
+        elif command == "?g":
+            try:
+                num = int(args[0])
+            except ValueError:
+                return False
+            mess = self.messages[int(args[1])]
+            author = self.client.get_user(mess['user_id'])
+            guild = self.client.get_guild(mess['guild'])
+            embed = discord.Embed(title=f'ナンバー{num}のメッセージの詳細', description=f'author:{author.name}\n'
+                                                                           f'guild:{guild.name}\nauthor_id:{author.id}')
+            embed.add_field(name="content", value=mess['content'])
 
     async def _connect(self, message: discord.Message, *, is_r18=False):
         if not is_r18:
@@ -117,28 +134,29 @@ class Worker(BaseWorker):
             content = message.content.replace("@", "＠")
             if re.search("discord\.gg", content) or content.startswith("!"):
                 return -1
-            embed = None
+            embed = discord.Embed(title=content)
             try:
                 if message.attachments:
-                    embed = discord.Embed()
                     embed.set_image(url=message.attachments[0].url)
             except:
                 pass
+            embed.set_footer(text=message.guild.name, icon_url=message.guild.icon_url)
+            # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
             async with aiohttp.ClientSession() as session:
                 for hook_url in self.webhooks:
                     if self.data[hook_url] == message.channel.id:
                         continue
                     webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
-                    if embed:
-                        await webhook.send(content + f'\nuserid:{message.author.id}',
-                                           username=f'{message.author.name} id:{self.num}',
-                                           avatar_url=message.author.avatar_url,
-                                           embed=embed)
-                    else:
-                        await webhook.send(content + f'\nuserid:{message.author.id}',
-                                           username=f'{message.author.name} id:{self.num}',
-                                           avatar_url=message.author.avatar_url)
-            self.messages[self.num] = message.content
+                    await webhook.send(
+                                       # content + f'\nuserid:{message.author.id}',
+                                       username=f'{message.author.name} id:{self.num}',
+                                       avatar_url=message.author.avatar_url,
+                                       embed=embed)
+            self.messages[self.num] = {"content": message.content,
+                                       "embed": embed.to_dict(),
+                                       "user_id": message.author.id,
+                                       "guild": message.guild.id,
+                                       }
             self.num += 1
             return True
         else:
