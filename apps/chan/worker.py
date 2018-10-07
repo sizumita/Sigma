@@ -79,17 +79,17 @@ class Worker(BaseWorker):
 
     async def load(self):
         try:
-            async with aiofiles.open('./pickles/say.pickle', 'rb') as f:
+            async with aiofiles.open('./datas/say.pickle', 'rb') as f:
                 self.say_b_a = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
             pass
         try:
-            async with aiofiles.open('./pickles/hello.pickle', 'rb') as f:
+            async with aiofiles.open('./datas/hello.pickle', 'rb') as f:
                 self.hello_channel_ids = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
             pass
         try:
-            async with aiofiles.open('./pickles/nick.pickle', 'rb') as f:
+            async with aiofiles.open('./datas/nick.pickle', 'rb') as f:
                 self.hello_channel_ids = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
             pass
@@ -316,13 +316,13 @@ class Worker(BaseWorker):
         await message.channel.send(f"{content[1]},{content[2]},{content[3]}\nとして書き込みました。")
 
     async def logout(self):
-        with open('./pickles/say.pickle', mode='wb') as f:
+        with open('./datas/say.pickle', mode='wb') as f:
             pickle.dump(self.say_b_a, f)
 
-        with open('./pickles/hello.pickle', mode='wb') as f:
+        with open('./datas/hello.pickle', mode='wb') as f:
             pickle.dump(self.hello_channel_ids, f)
 
-        with open('./pickles/nick.pickle', mode='wb') as f:
+        with open('./datas/nick.pickle', mode='wb') as f:
             pickle.dump(self.user_nick, f)
 
     async def member_join(self, member: discord.Member):

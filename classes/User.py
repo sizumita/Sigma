@@ -1,6 +1,6 @@
 import discord
 from classes import sqlManager
-manager = sqlManager.SQLManager(db="sigma.db")
+manager = sqlManager.SQLManager(db="datas/sigma.db")
 
 
 class User(object):
