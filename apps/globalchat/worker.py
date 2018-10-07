@@ -111,9 +111,11 @@ class Worker(BaseWorker):
                 return True
 
         elif command == "?g":
+            print(args)
             try:
                 num = int(args[0])
             except ValueError:
+                await message.channel.send("そりゃ数字じゃねーぞ")
                 return False
             mess = self.messages[int(args[1])]
             author = self.client.get_user(mess['user_id'])
