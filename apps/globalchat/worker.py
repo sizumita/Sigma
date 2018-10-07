@@ -101,6 +101,14 @@ class Worker(BaseWorker):
                 return True
             if args[0] == "auto_connect":
                 await self.auto_connect(message)
+                return True
+            if args[0] == "all":
+                text = ""
+                for x in self.channels:
+                    channel = self.client.get_channel(x)
+                    text += f'global-chat on {channel.guild.name}\n'
+                await message.channel.send(text)
+                return True
 
         elif command == "?g":
             try:
