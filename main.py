@@ -24,6 +24,12 @@ except:
     pass
 
 
+async def point_task(author):
+    add_point_user.append(author.id)
+    await asyncio.sleep(60)
+    add_point_user.remove(author.id)
+
+
 class MyClient(discord.Client):
     def __init__(self, **options):
         super().__init__(**options)
@@ -47,10 +53,11 @@ class MyClient(discord.Client):
     async def on_message(self, message: discord.Message):
         global system_ban_id, users, sessions, useing, add_point_user
         try:
-            if message.attachments and not message.author.bot:
-                await self.logger.send_image(message)
-            # elif "discord.gg" in message.content:
-                # await self.logger.send_invite(message)
+            if not message.author.bot:
+                if message.attachments and not message.author.bot:
+                    await self.logger.send_image(message)
+                elif "discord.gg" in message.content:
+                    await self.logger.send_invite(message)
         except:
             pass
         if message.content == "sigma rc" and message.author.id == 212513828641046529:
@@ -113,21 +120,14 @@ class MyClient(discord.Client):
             useing.remove(message.author.id)
 
         else:
-            if await check(message):
-                return
-            if not str(message.author.id) in users.keys():
-                await self.app_manager.message_on(message)
-                return
-            if not message.author.id in add_point_user \
-                    and not message.content.startswith("sigma "):
+            await self.app_manager.message_on(message)
+            if not message.author.id in add_point_user:
                 try:
                     user = get_user(message.author.id)
                     if isinstance(user, bool):
                         return
                     user.add_point(random.randint(5, 15))
-                    add_point_user.append(message.author.id)
-                    await asyncio.sleep(60)
-                    add_point_user.remove(message.author.id)
+                    self.loop.create_task(point_task(message.author))
                 except:
                     pass
 
