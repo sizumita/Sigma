@@ -144,14 +144,17 @@ class Worker(BaseWorker):
             # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
             async with aiohttp.ClientSession() as session:
                 for hook_url in self.webhooks:
-                    if self.data[hook_url] == message.channel.id:
-                        continue
-                    webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
-                    await webhook.send(
-                                       # content + f'\nuserid:{message.author.id}',
-                                       username=f'{message.author.name} id:{self.num}',
-                                       avatar_url=message.author.avatar_url,
-                                       embed=embed)
+                    try:
+                        if self.data[hook_url] == message.channel.id:
+                            continue
+                        webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
+                        await webhook.send(
+                                           # content + f'\nuserid:{message.author.id}',
+                                           username=f'{message.author.name} id:{self.num}',
+                                           avatar_url=message.author.avatar_url,
+                                           embed=embed)
+                    except discord.errors.NotFound:
+                        pass
             self.messages[self.num] = {"content": message.content,
                                        "embed": embed.to_dict(),
                                        "user_id": message.author.id,
