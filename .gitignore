@@ -6,6 +6,8 @@ test.py
 *.png
 .DS_Store
 .text
+apps/**/*.csv
+apps/**/*.pickle
 # Created by https://www.gitignore.io/api/python,pycharm
 
 ### PyCharm ###
