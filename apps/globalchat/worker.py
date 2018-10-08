@@ -95,10 +95,10 @@ class Worker(BaseWorker):
 
     async def on_message(self, message: discord.Message):
         if message.channel.id in self.channels:
-            await self.send_webhook(message)
+            await self.send_webhook(message.guild, message.channel, message.author, message.content, message.attachments)
             return True
         if message.channel.id in self.channels_r18:
-            await self.send_webhook(message, is_r18=True)
+            await self.send_webhook(message.guild, message.channel, message.author, message.content, message.attachments, is_r18=True)
             return True
         if message.channel.name == "global-chat":
             await self._connect(message)
@@ -125,9 +125,6 @@ class Worker(BaseWorker):
                 delete_text = self.messages[int(args[1])]['content']
                 delete_dict = self.messages[int(args[1])]['embed']
                 await delete_message(message.author, delete_text, delete_dict, self.channels, self.client)
-                return True
-            if args[0] == "auto_connect":
-                await self.auto_connect(message)
                 return True
             if args[0] == "all":
                 text = f"{len(self.channels)} channels\n"
@@ -180,126 +177,83 @@ class Worker(BaseWorker):
             await message.channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
             return True
 
-    async def send_webhook(self, message: discord.Message, *, is_r18=False):
-        if message.author.id in self.nick:
-            username = self.nick[message.author.id]
+    async def send_webhook(self, guild: discord.Guild, channel: discord.TextChannel, author: discord.Member, content: str, attachments: list, *, is_r18=False):
+        if author.id in self.nick:
+            username = self.nick[author.id]
         else:
-            username = message.author.name
+            username = author.name
         if not is_r18:
-            content = message.content.replace("@", "＠")
+            content = content.replace("@", "＠")
             if re.search("discord\.gg", content) or content.startswith("!"):
                 return -1
             embed = discord.Embed(title=content)
             try:
-                if message.attachments:
-                    embed.set_image(url=message.attachments[0].url)
+                if attachments:
+                    embed.set_image(url=attachments[0].url)
             except:
                 pass
-            embed.set_author(name=str(message.author), icon_url=message.author.avatar_url)
-            embed.set_footer(text=message.guild.name, icon_url=message.guild.icon_url)
+            embed.set_author(name=str(author), icon_url=author.avatar_url)
+            embed.set_footer(text=guild.name, icon_url=guild.icon_url)
             # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
             async with aiohttp.ClientSession() as session:
                 for hook_url in self.webhooks:
                     try:
-                        if self.data[hook_url] == message.channel.id:
+                        if self.data[hook_url] == channel.id:
                             continue
                         webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
                         await webhook.send(
                                            # content + f'\nuserid:{message.author.id}',
                                            username=f'{username} id:{self.num}',
-                                           avatar_url=message.author.avatar_url,
+                                           avatar_url=author.avatar_url,
                                            embed=embed)
                     except discord.errors.NotFound:
                         pass
             self.messages[self.num] = {
-                                       "content": message.content,
+                                       "content": content,
                                        "embed": embed.to_dict(),
-                                       "user_id": message.author.id,
-                                       "guild": message.guild.id,
+                                       "user_id": author.id,
+                                       "guild": guild.id,
                                        }
             self.num += 1
-            if not message.guild.id in self.speak_data.keys():
-                self.speak_data[message.guild.id] = 1
+            if not guild.id in self.speak_data.keys():
+                self.speak_data[guild.id] = 1
                 return True
-            self.speak_data[message.guild.id] += 1
+            self.speak_data[guild.id] += 1
             return True
         else:
-            content = message.content.replace("@", "＠")
+            content = content.replace("@", "＠")
             if re.search("discord\.gg", content) or content.startswith("!"):
                 return -1
             embed = discord.Embed(title=content)
             try:
-                if message.attachments:
-                    embed.set_image(url=message.attachments[0].url)
+                if attachments:
+                    embed.set_image(url=attachments[0].url)
             except:
                 pass
-            embed.set_author(name=str(message.author), icon_url=message.author.avatar_url)
-            embed.set_footer(text=message.guild.name, icon_url=message.guild.icon_url)
+            embed.set_author(name=str(author), icon_url=author.avatar_url)
+            embed.set_footer(text=guild.name, icon_url=guild.icon_url)
             # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
             async with aiohttp.ClientSession() as session:
                 for hook_url in self.webhooks_r18:
                     try:
-                        if self.data_r18[hook_url] == message.channel.id:
+                        if self.data_r18[hook_url] == channel.id:
                             continue
                         webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
                         await webhook.send(
                             # content + f'\nuserid:{message.author.id}',
                             username=f'{username} id:{self.num}',
-                            avatar_url=message.author.avatar_url,
+                            avatar_url=author.avatar_url,
                             embed=embed)
                     except discord.errors.NotFound:
                         pass
             self.messages_r18[self.num_r18] = {
-                "content": message.content,
+                "content": content,
                 "embed": embed.to_dict(),
-                "user_id": message.author.id,
-                "guild": message.guild.id,
+                "user_id": author.id,
+                "guild": guild.id,
             }
             self.num_r18 += 1
-            if not message.guild.id in self.speak_data.keys():
-                self.speak_data[message.guild.id] = 1
-                return True
-            self.speak_data[message.guild.id] += 1
             return True
-
-    @owner_only
-    async def auto_connect(self, message: discord.Message):
-        for guild in self.client.guilds:
-            for channel in guild.channels:
-                print(channel.name)
-                try:
-                    if channel.name == "global-chat":
-                        if message.channel.id in self.channels:
-                            continue
-                        if await channel.webhooks():
-                            self.channels.append(channel.id)
-                            self.webhooks.append(await channel.webhooks()[0].url)
-                            self.data[await channel.webhooks()[0].url] = channel.id
-                            await channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels)}")
-                            continue
-                        webhook = await channel.create_webhook(name="global-chat")
-                        self.channels.append(channel.id)
-                        self.webhooks.append(webhook.url)
-                        self.data[webhook.url] = channel.id
-                        await channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels)}")
-                        return True
-                    if channel.name == "global-r18":
-                        if message.channel.id in self.channels_r18:
-                            continue
-                        if await channel.webhooks():
-                            self.channels_r18.append(channel.id)
-                            self.webhooks_r18.append(await channel.webhooks()[0].url)
-                            self.data_r18[await channel.webhooks()[0].url] = channel.id
-                            await channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
-                            continue
-                        webhook = await channel.create_webhook(name="global-chat")
-                        self.channels_r18.append(channel.id)
-                        self.webhooks_r18.append(webhook.url)
-                        self.data_r18[webhook.url] = channel.id
-                        await channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
-                        return True
-                except:
-                    pass
 
     async def show_speak_data(self, message: discord.Message):
         data = []
