@@ -86,6 +86,8 @@ class Worker(BaseWorker):
                 self.nick = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
             pass
+        for channel in self.channels:
+            await self.client.get_channel(channel).send("sigma OS 起動します...")
 
     async def join(self, message: discord.Message):
         await message.channel.send(help_message)
@@ -106,6 +108,8 @@ class Worker(BaseWorker):
             return True
 
     async def logout(self):
+        for channel in self.channels:
+            await self.client.get_channel(channel).send("sigma OS 終了します...")
         with open('./datas/global.pickle', mode='wb') as f:
             pickle.dump(self.data, f)
         with open('./datas/global-r18.pickle', mode='wb') as f:
