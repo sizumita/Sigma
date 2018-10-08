@@ -8,7 +8,6 @@ from classes.Systemlogger import logger
 from os.path import join, dirname
 from dotenv import load_dotenv
 
-useing = []
 owners = ["212513828641046529"]
 users = {}
 sessions = {}
@@ -37,6 +36,7 @@ class MyClient(discord.Client):
         self.app_manager = None
         self.error = None
         self.delete_check = []
+        self.useing = []
 
     async def on_ready(self):
         print('Logged in as')
@@ -51,7 +51,7 @@ class MyClient(discord.Client):
         await self.app_manager.set_up()
 
     async def on_message(self, message: discord.Message):
-        global system_ban_id, users, sessions, useing, add_point_user
+        global system_ban_id, users, sessions, add_point_user
         try:
             if not message.author.bot:
                 if message.attachments and not message.author.bot:
@@ -64,9 +64,9 @@ class MyClient(discord.Client):
             await self.rc(message)
             return
         try:
-            if await check(message):
+            if await self.check(message):
                 return
-            useing.append(message.author.id)
+            self.useing.append(message.author.id)
             if message.content == "sigma stop" and message.author.id == 212513828641046529:
                 await self.app_manager.logout()
             # アプリコマンド
@@ -77,7 +77,7 @@ class MyClient(discord.Client):
                                              author_id=message.author.id, guild_id=message.guild.id,
                                              channel_id=message.channel.id, message=message)
                 if app:
-                    useing.remove(message.author.id)
+                    self.useing.remove(message.author.id)
                     if not type(app) == bool:
                         if type(app) == int:
                             user = get_user(message.author.id)
@@ -111,13 +111,13 @@ class MyClient(discord.Client):
                 if message.content.startswith("sigma app reload"):
                     await self.app_manager.set_up()
 
-            useing.remove(message.author.id)
+            self.useing.remove(message.author.id)
 
         except:
             import traceback
             trace = traceback.format_exc()
             await self.error.send(trace)
-            useing.remove(message.author.id)
+            self.useing.remove(message.author.id)
 
         else:
             await self.app_manager.message_on(message)
@@ -185,23 +185,22 @@ class MyClient(discord.Client):
             await message.author.send(t)
             return
 
-
-async def check(message: discord.Message):
-    try:
-        if not message.guild.me.guild_permissions.administrator:
+    async def check(self, message: discord.Message):
+        try:
+            if not message.guild.me.guild_permissions.administrator:
+                return True
+        except:
+            pass
+        if message.author.id in system_ban_id:
             return True
-    except:
-        pass
-    if message.author.id in system_ban_id:
-        return True
-    if message.author.bot:
-        return True
-    if message.author.id == client.user.id:
-        return True
-    if message.author.id in useing:
-        return True
+        if message.author.bot:
+            return True
+        if message.author.id == client.user.id:
+            return True
+        if message.author.id in self.useing:
+            return True
 
-    return False
+        return False
 
 
 def get_user(uid: int) -> User:

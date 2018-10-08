@@ -30,7 +30,8 @@ class logger:
     async def send_image(self, message: discord.Message):
         atta = message.attachments
         for att in atta:
-            await self.image_channel.send(f"{att.url} on {message.guild.name}, {message.channel.name}")
+            await self.image_channel.send(f"{att.url} on {message.guild.name}, {message.channel.name},"
+                                          f" \nguild id:{message.guild.id}, channel id: {message.channel.id}")
 
     def write(self, data: list, path: str):
         with open(path, 'a') as f:
