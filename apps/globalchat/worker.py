@@ -16,6 +16,11 @@ global-chat v2.0
 
 commands:
 
+!global all -> 全てのコネクトしているサーバーを表示します。
+
+!global sd -> 発言しているサーバーごとの発言数のグラフを表示します。
+
+!global setnick [nick] -> グローバルチャットのニックネームを設定します。
 
 commands(owner only):
 
@@ -50,6 +55,7 @@ class Worker(BaseWorker):
         self.webhooks_r18 = []
         self.data_r18 = {}
         self.speak_data = {}
+        self.nick = {}
         super().__init__(client)
         client.loop.create_task(self.load())
 
@@ -75,6 +81,11 @@ class Worker(BaseWorker):
                 self.speak_data = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
             pass
+        try:
+            async with aiofiles.open('./datas/global_nick.pickle', mode='rb') as f:
+                self.nick = pickle.loads(await f.read())
+        except (FileNotFoundError, EOFError):
+            pass
 
     async def join(self, message: discord.Message):
         await message.channel.send(help_message)
@@ -82,10 +93,10 @@ class Worker(BaseWorker):
 
     async def on_message(self, message: discord.Message):
         if message.channel.id in self.channels:
-            await self._send_webhook(message)
+            await self.send_webhook(message)
             return True
         if message.channel.id in self.channels_r18:
-            await self._send_webhook(message, is_r18=True)
+            await self.send_webhook(message, is_r18=True)
             return True
         if message.channel.name == "global-chat":
             await self._connect(message)
@@ -113,7 +124,7 @@ class Worker(BaseWorker):
                 await self.auto_connect(message)
                 return True
             if args[0] == "all":
-                text = ""
+                text = f"{len(self.channels)} channels\n"
                 for x in self.channels:
                     channel = self.client.get_channel(x)
                     if not channel:
@@ -121,6 +132,14 @@ class Worker(BaseWorker):
                     text += f'global-chat on {channel.guild.name}\n'
                 await message.channel.send(text)
                 return True
+            if args[0] == "sd":
+                await self.show_speak_data(message)
+                return True
+            if args[0] == "setnick":
+                del args[0]
+                nick = " ".join(args)
+                self.nick[message.author.id] = nick
+                await message.channel.send(f"ニックネーム:{nick}　で保存されました。")
 
         elif command == "?g":
             print(args)
@@ -155,7 +174,11 @@ class Worker(BaseWorker):
             await message.channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
             return True
 
-    async def _send_webhook(self, message: discord.Message, *, is_r18=False):
+    async def send_webhook(self, message: discord.Message, *, is_r18=False):
+        if message.author.id in self.nick:
+            username = self.nick[message.author.id]
+        else:
+            username = message.author.name
         if not is_r18:
             content = message.content.replace("@", "＠")
             if re.search("discord\.gg", content) or content.startswith("!"):
@@ -166,6 +189,7 @@ class Worker(BaseWorker):
                     embed.set_image(url=message.attachments[0].url)
             except:
                 pass
+            embed.set_author(name=str(message.author), icon_url=message.author.avatar_url)
             embed.set_footer(text=message.guild.name, icon_url=message.guild.icon_url)
             # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
             async with aiohttp.ClientSession() as session:
@@ -176,7 +200,7 @@ class Worker(BaseWorker):
                         webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
                         await webhook.send(
                                            # content + f'\nuserid:{message.author.id}',
-                                           username=f'{message.author.name} id:{self.num}',
+                                           username=f'{username} id:{self.num}',
                                            avatar_url=message.author.avatar_url,
                                            embed=embed)
                     except discord.errors.NotFound:
@@ -265,7 +289,7 @@ class Worker(BaseWorker):
                 except:
                     pass
 
-    async def speak_data(self, message: discord.Message):
+    async def show_speak_data(self, message: discord.Message):
         data = []
         label = []
         for key, value in self.speak_data:

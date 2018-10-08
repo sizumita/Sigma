@@ -10,7 +10,7 @@ def pie_chart(data: list, label: list, file_name: str):
     col = cm.Spectral(np.arange(len(data)) / float(len(data)))
     plt.figure(figsize=size, dpi=100)
     plt.pie(data, colors=col, counterclock=False, startangle=90,
-            autopct=lambda p: '{:.1f}%'.format(p) if p >= 5 else '')
+            autopct=lambda p: '{:0.1f}%'.format(p) if p >= 5 else '')
     plt.subplots_adjust(left=0, right=0.7)
     plt.legend(label, fancybox=True, loc='center left', bbox_to_anchor=(0.9, 0.5))
     plt.axis('equal')
