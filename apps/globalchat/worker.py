@@ -263,7 +263,7 @@ class Worker(BaseWorker):
         label = []
         for key, value in self.speak_data.items():
             data.append(value)
-            label.append(key)
+            label.append(self.client.get_guild(key).name)
         pie_chart(data, label, "./datas/graph/speak_data.png")
         file = discord.File("./datas/graph/speak_data.png")
         await message.channel.send("global-chat 使用率のグラフです。", file=file)
