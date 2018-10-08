@@ -149,12 +149,13 @@ class Worker(BaseWorker):
 
         elif command == "?g":
             print(args)
+            print(mess)
             try:
                 num = int(args[0])
             except ValueError:
                 await message.channel.send("そりゃ数字じゃねーぞ")
                 return False
-            mess = self.messages[int(args[0])]
+            mess = self.messages[num]
             author = self.client.get_user(mess['user_id'])
             guild = self.client.get_guild(mess['guild'])
             embed = discord.Embed(title=f'ナンバー{num}のメッセージの詳細', description=f'author:{author.name}\n'
