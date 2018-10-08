@@ -261,7 +261,7 @@ class Worker(BaseWorker):
     async def show_speak_data(self, message: discord.Message):
         data = []
         label = []
-        for key, value in self.speak_data:
+        for key, value in self.speak_data.items():
             data.append(value)
             label.append(key)
         pie_chart(data, label, "./datas/graph/speak_data.png")
