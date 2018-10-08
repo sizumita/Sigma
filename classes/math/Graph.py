@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
+font = {"family":"fonts-japanese-mincho"}
+plt.rc('font', **font)
 
 
 def pie_chart(data: list, label: list, file_name: str):
