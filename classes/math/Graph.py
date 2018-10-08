@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
-font = {"family": "IPAexMincho"}
+font = {"family": "IPAexGothic"}
 plt.rc('font', **font)
 
 
