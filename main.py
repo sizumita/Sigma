@@ -138,7 +138,6 @@ class MyClient(discord.Client):
                 import traceback
                 trace = traceback.format_exc()
                 await self.error.send(trace)
-                self.useing.remove(message.author.id)
 
     async def on_member_join(self, member: discord.Member):
         await self.app_manager.member_join(member)
