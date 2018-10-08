@@ -1,3 +1,5 @@
+import aiofiles
+
 from classes.baseworker import BaseWorker
 from classes.decos import owner_only
 import pickle
@@ -5,6 +7,7 @@ import re
 import discord
 from discord import Webhook, AsyncWebhookAdapter
 import aiohttp
+from classes.math.Graph import pie_chart
 help_message = """
 ```
 global-chat v2.0
@@ -46,27 +49,36 @@ class Worker(BaseWorker):
         self.channels_r18 = []
         self.webhooks_r18 = []
         self.data_r18 = {}
+        self.speak_data = {}
         super().__init__(client)
+        client.loop.create_task(self.load())
+
+    async def load(self):
         try:
-            with open('./datas/global.pickle', mode='rb') as f:
-                for key, value in pickle.load(f).items():
+            async with aiofiles.open('./datas/global.pickle', mode='rb') as f:
+                for key, value in pickle.loads(await f.read()).items():
                     self.channels.append(value)
                     self.webhooks.append(key)
                     self.data[key] = value
-        except FileNotFoundError:
-            pass
-        except EOFError:
+        except (FileNotFoundError, EOFError):
             pass
         try:
-            with open('./datas/global-r18.pickle', mode='rb') as f:
-                for key, value in pickle.load(f).items():
+            async with aiofiles.open('./datas/global-r18.pickle', mode='rb') as f:
+                for key, value in pickle.loads(await f.read()).items():
                     self.channels_r18.append(value)
                     self.webhooks_r18.append(key)
                     self.data_r18[key] = value
-        except FileNotFoundError:
+        except (FileNotFoundError, EOFError):
             pass
-        except EOFError:
+        try:
+            async with aiofiles.open('./datas/global_speak_data.pickle', mode='rb') as f:
+                self.speak_data = pickle.loads(await f.read())
+        except (FileNotFoundError, EOFError):
             pass
+        for x in self.channels:
+            guild = self.client.get_guild(x)
+            if not guild.id in self.speak_data.keys():
+                self.speak_data[guild.id] = 0
 
     async def join(self, message: discord.Message):
         await message.channel.send(help_message)
@@ -91,6 +103,8 @@ class Worker(BaseWorker):
             pickle.dump(self.data, f)
         with open('./datas/global-r18.pickle', mode='wb') as f:
             pickle.dump(self.data_r18, f)
+        with open('./datas/global_speak_data.pickle', mode='wb') as f:
+            pickle.dump(self.speak_data, f)
 
     async def command(self, message: discord.Message, command: str, args: list):
         if command == "!global":
@@ -134,6 +148,7 @@ class Worker(BaseWorker):
             self.data[webhook.url] = message.channel.id
             # print(self.data)
             await message.channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels)}")
+            self.speak_data[message.guild.id] = 0
             return True
         else:
             webhook = await message.channel.create_webhook(name="global-chat-r18")
@@ -170,12 +185,14 @@ class Worker(BaseWorker):
                                            embed=embed)
                     except discord.errors.NotFound:
                         pass
-            self.messages[self.num] = {"content": message.content,
+            self.messages[self.num] = {
+                                       "content": message.content,
                                        "embed": embed.to_dict(),
                                        "user_id": message.author.id,
                                        "guild": message.guild.id,
                                        }
             self.num += 1
+            self.speak_data[message.guild.id] += 1
             return True
         else:
             content = message.content.replace("@", "＠")
@@ -202,7 +219,6 @@ class Worker(BaseWorker):
                         await webhook.send(content + f'\nuserid:{message.author.id}',
                                            username=f'{message.author.name} id:{self.num}',
                                            avatar_url=message.author.avatar_url)
-            print(self.num_r18)
             self.messages_r18[self.num_r18] = {"content": message.content,
                                                "embed": embed.to_dict(),
                                                "user_id": message.author.id,
@@ -249,3 +265,13 @@ class Worker(BaseWorker):
                         return True
                 except:
                     pass
+
+    async def speak_data(self, message: discord.Message):
+        data = []
+        label = []
+        for key, value in self.speak_data:
+            data.append(value)
+            label.append(key)
+        pie_chart(data, label, "./datas/graph/speak_data.png")
+        file = discord.File("./datas/graph/speak_data.png")
+        await message.channel.send("global-chat 使用率のグラフです。", file=file)
