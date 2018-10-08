@@ -192,6 +192,9 @@ class Worker(BaseWorker):
                                        "guild": message.guild.id,
                                        }
             self.num += 1
+            if not message.guild.id in self.speak_data.keys():
+                self.speak_data[message.guild.id] = 1
+                return True
             self.speak_data[message.guild.id] += 1
             return True
         else:
