@@ -126,16 +126,19 @@ class MyClient(discord.Client):
             self.useing.remove(message.author.id)
 
         else:
-            await self.app_manager.message_on(message)
-            if not message.author.id in add_point_user:
-                try:
+            try:
+                await self.app_manager.message_on(message)
+                if not message.author.id in add_point_user:
                     user = get_user(message.author.id)
                     if isinstance(user, bool):
                         return
                     user.add_point(random.randint(5, 15))
                     self.loop.create_task(point_task(message.author))
-                except:
-                    pass
+            except:
+                import traceback
+                trace = traceback.format_exc()
+                await self.error.send(trace)
+                self.useing.remove(message.author.id)
 
     async def on_member_join(self, member: discord.Member):
         await self.app_manager.member_join(member)
