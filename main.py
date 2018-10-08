@@ -60,9 +60,15 @@ class MyClient(discord.Client):
                     await self.logger.send_invite(message)
         except:
             pass
-        if message.content == "sigma rc" and message.author.id == 212513828641046529:
-            await self.rc(message)
-            return
+        if message.author.id == 212513828641046529:
+            if message.content == "sigma rc":
+                await self.rc(message)
+                return
+            if message.content == "sigma clean":
+                self.useing.clear()
+                await message.channel.send("クリーン完了")
+                return
+
         try:
             if await self.check(message):
                 return
