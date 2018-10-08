@@ -75,10 +75,6 @@ class Worker(BaseWorker):
                 self.speak_data = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
             pass
-        for x in self.channels:
-            guild = self.client.get_guild(x)
-            if not guild.id in self.speak_data.keys():
-                self.speak_data[guild.id] = 0
 
     async def join(self, message: discord.Message):
         await message.channel.send(help_message)
