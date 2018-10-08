@@ -87,7 +87,10 @@ class Worker(BaseWorker):
         except (FileNotFoundError, EOFError):
             pass
         for channel in self.channels:
-            await self.client.get_channel(channel).send("sigma OS 起動します...")
+            try:
+                await self.client.get_channel(channel).send("sigma OS 起動します...")
+            except AttributeError:
+                pass
 
     async def join(self, message: discord.Message):
         await message.channel.send(help_message)
