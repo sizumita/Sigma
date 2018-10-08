@@ -148,8 +148,6 @@ class Worker(BaseWorker):
                 await message.channel.send(f"ニックネーム:{nick}　で保存されました。")
 
         elif command == "?g":
-            print(args)
-            print(mess)
             try:
                 num = int(args[0])
             except ValueError:
@@ -161,7 +159,6 @@ class Worker(BaseWorker):
             embed = discord.Embed(title=f'ナンバー{num}のメッセージの詳細', description=f'author:{author.name}\n'
                                                                            f'guild:{guild.name}\nauthor_id:{author.id}')
             embed.add_field(name="content", value=mess['content'])
-            print(embed.to_dict())
             await message.channel.send(embed=embed)
 
     async def _connect(self, message: discord.Message, *, is_r18=False):
