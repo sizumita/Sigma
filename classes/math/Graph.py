@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
-font = {"family":"fonts-japanese-mincho"}
+font = {"family": "IPAexMincho"}
 plt.rc('font', **font)
 
 
