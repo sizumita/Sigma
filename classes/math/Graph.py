@@ -1,8 +1,10 @@
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
-font = {"family": "IPAexGothic"}
-plt.rc('font', **font)
+from matplotlib.font_manager import FontProperties
+font_path = '/usr/share/fonts/truetype/fonts-japanese-gothic.ttf'
+font_prop = FontProperties(fname=font_path)
+plt.rcParams['font.family'] = font_prop.get_name()
 
 
 def pie_chart(data: list, label: list, file_name: str):
@@ -18,3 +20,4 @@ def pie_chart(data: list, label: list, file_name: str):
     plt.axis('equal')
     plt.savefig(f"{file_name}", bbox_inches='tight', pad_inches=0.05)
     return True
+
