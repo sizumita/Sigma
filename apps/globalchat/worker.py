@@ -112,6 +112,8 @@ class Worker(BaseWorker):
             pickle.dump(self.data_r18, f)
         with open('./datas/global_speak_data.pickle', mode='wb') as f:
             pickle.dump(self.speak_data, f)
+        with open('./datas/global_nick.pickle', mode='wb') as f:
+            pickle.dump(self.nick, f)
 
     async def command(self, message: discord.Message, command: str, args: list):
         if command == "!global":
