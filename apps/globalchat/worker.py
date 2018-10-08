@@ -223,33 +223,39 @@ class Worker(BaseWorker):
             content = message.content.replace("@", "＠")
             if re.search("discord\.gg", content) or content.startswith("!"):
                 return -1
-            embed = None
+            embed = discord.Embed(title=content)
             try:
                 if message.attachments:
-                    embed = discord.Embed()
                     embed.set_image(url=message.attachments[0].url)
             except:
                 pass
+            embed.set_author(name=str(message.author), icon_url=message.author.avatar_url)
+            embed.set_footer(text=message.guild.name, icon_url=message.guild.icon_url)
+            # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
             async with aiohttp.ClientSession() as session:
                 for hook_url in self.webhooks_r18:
-                    if self.data_r18[hook_url] == message.channel.id:
-                        continue
-                    webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
-                    if embed:
-                        await webhook.send(content + f'\nuserid:{message.author.id}',
-                                           username=f'{message.author.name} id:{self.num}',
-                                           avatar_url=message.author.avatar_url,
-                                           embed=embed)
-                    else:
-                        await webhook.send(content + f'\nuserid:{message.author.id}',
-                                           username=f'{message.author.name} id:{self.num}',
-                                           avatar_url=message.author.avatar_url)
-            self.messages_r18[self.num_r18] = {"content": message.content,
-                                               "embed": embed.to_dict(),
-                                               "user_id": message.author.id,
-                                               "guild": message.guild.id,
-                                               }
+                    try:
+                        if self.data_r18[hook_url] == message.channel.id:
+                            continue
+                        webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
+                        await webhook.send(
+                            # content + f'\nuserid:{message.author.id}',
+                            username=f'{username} id:{self.num}',
+                            avatar_url=message.author.avatar_url,
+                            embed=embed)
+                    except discord.errors.NotFound:
+                        pass
+            self.messages_r18[self.num_r18] = {
+                "content": message.content,
+                "embed": embed.to_dict(),
+                "user_id": message.author.id,
+                "guild": message.guild.id,
+            }
             self.num_r18 += 1
+            if not message.guild.id in self.speak_data.keys():
+                self.speak_data[message.guild.id] = 1
+                return True
+            self.speak_data[message.guild.id] += 1
             return True
 
     @owner_only
