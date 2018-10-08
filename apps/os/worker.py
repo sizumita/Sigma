@@ -214,13 +214,13 @@ class Worker(BaseWorker):
             await message.channel.send("app 使用率のグラフです。", file=file)
 
         @owner_only
-        async def notice(author: discord.Member, message: discord.Message):
+        async def notice(author: discord.Member):
             text = " ".join(args)
             await self.notice.send(text)
         channel = message.channel
         author = message.author
         if command == ".notice":
-            await notice(message.author, message)
+            await notice(message.author)
             return True
         if command == "sigma":
             if not args:
