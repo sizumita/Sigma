@@ -154,7 +154,7 @@ class Worker(BaseWorker):
             except ValueError:
                 await message.channel.send("そりゃ数字じゃねーぞ")
                 return False
-            mess = self.messages[int(args[1])]
+            mess = self.messages[int(args[0])]
             author = self.client.get_user(mess['user_id'])
             guild = self.client.get_guild(mess['guild'])
             embed = discord.Embed(title=f'ナンバー{num}のメッセージの詳細', description=f'author:{author.name}\n'
