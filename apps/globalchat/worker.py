@@ -1,5 +1,5 @@
 import aiofiles
-
+import random
 from classes.baseworker import BaseWorker
 from classes.decos import owner_only
 import pickle
@@ -8,6 +8,7 @@ import discord
 from discord import Webhook, AsyncWebhookAdapter
 import aiohttp
 from classes.math.Graph import pie_chart
+import asyncio
 help_message = """
 ```
 global-chat v2.0
@@ -27,19 +28,28 @@ commands(owner only):
 !global del [id] delete message for id
 ```
 """
+tips = [
+    "`!global sd`で、global chatの使用率を確認することができます。",
+    "`!fse`で、FlickrAPIで、画像を検索することができます。",
+    "`!timer`で、タイマーを起動することができます。",
+    "`!global all`で、全てのglobal chatにコネクトしているチャンネルを見ることができます。",
+]
 
 
 @owner_only
 async def delete_message(author, delete_text: str, delete_dict: str,  channels: list, client: discord.Client):
     channel = list(map(lambda x: client.get_channel(x), channels))
     for ch in channel:
-        async for mess in ch.history():
-            if mess.embeds:
-                if mess.embeds[0].to_dict() == delete_dict:
-                    await mess.delete()
-            else:
-                if delete_text in mess.content:
-                    await mess.delete()
+        try:
+            async for mess in ch.history():
+                if mess.embeds:
+                    if mess.embeds[0].to_dict() == delete_dict:
+                        await mess.delete()
+                else:
+                    if delete_text in mess.content:
+                        await mess.delete()
+        except AttributeError:
+            pass
 
 
 class Worker(BaseWorker):
@@ -58,6 +68,7 @@ class Worker(BaseWorker):
         self.nick = {}
         super().__init__(client)
         client.loop.create_task(self.load())
+        client.loop.create_task(self.tips())
 
     async def load(self):
         try:
@@ -272,3 +283,19 @@ class Worker(BaseWorker):
         pie_chart(data, label, "./datas/graph/speak_data.png")
         file = discord.File("./datas/graph/speak_data.png")
         await message.channel.send("global-chat 使用率のグラフです。", file=file)
+
+    async def ad(self):
+        guild = self.client.get_guild(499345248359809026)
+        channel = self.client.get_channel(499345248359809028)
+        content = ""
+        await self.send_webhook(guild, channel, self.client.user, content, [])
+
+    async def tips(self):
+        await self.client.wait_until_ready()
+        await asyncio.sleep(30)
+        guild = self.client.get_guild(499345248359809026)
+        channel = self.client.get_channel(499345248359809028)
+        while not self.client.is_closed():
+            content = "---tips---\n" + random.choice(tips)
+            await self.send_webhook(guild, channel, self.client.user, content, [])
+            await asyncio.sleep(300)
