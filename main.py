@@ -120,11 +120,10 @@ class MyClient(discord.Client):
             self.useing.remove(message.author.id)
 
         except:
-            # import traceback
-            # trace = traceback.format_exc()
-            # await self.error.send(trace)
+            import traceback
+            trace = traceback.format_exc()
+            await self.error.send(trace)
             self.useing.remove(message.author.id)
-            raise
 
         else:
             await self.app_manager.message_on(message)
