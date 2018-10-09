@@ -127,6 +127,8 @@ class Worker(BaseWorker):
             if args[0] == "delete":
                 delete_text = self.messages[int(args[1])]['content']
                 delete_dict = self.messages[int(args[1])]['embed']
+                await message.channel.send(delete_text)
+                await message.channel.send(delete_dict)
                 await delete_message(message.author, delete_text, delete_dict, self.channels, self.client)
                 return True
             if args[0] == "all":
@@ -195,6 +197,9 @@ class Worker(BaseWorker):
                     embed.set_image(url=attachments[0].url)
             except:
                 pass
+            if len(content) > 250:
+                await channel.send(f"{author.mention},250文字以上のメッセージは送信できません。")
+                return False
             embed.set_author(name=str(author), icon_url=author.avatar_url)
             embed.set_footer(text=guild.name, icon_url=guild.icon_url)
             # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
