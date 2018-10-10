@@ -28,6 +28,9 @@ commands(owner only):
 !global del [id] delete message for id
 ```
 """
+ad_help = """
+準備中
+"""
 tips = [
     "`!global sd`で、global chatの使用率を確認することができます。",
     "`!fse`で、FlickrAPIで、画像を検索することができます。",
@@ -174,6 +177,10 @@ class Worker(BaseWorker):
             embed.add_field(name="content", value=mess['content'])
             await message.channel.send(embed=embed)
 
+        elif command == "!ad":
+            await message.channel.send(ad_help)
+            return True
+
     async def _connect(self, message: discord.Message, *, is_r18=False):
         if not is_r18:
             webhook = await message.channel.create_webhook(name="global-chat")
@@ -298,4 +305,4 @@ class Worker(BaseWorker):
         while not self.client.is_closed():
             content = "---tips---\n" + random.choice(tips)
             await self.send_webhook(guild, channel, self.client.user, content, [])
-            await asyncio.sleep(300)
+            await asyncio.sleep(1800)
