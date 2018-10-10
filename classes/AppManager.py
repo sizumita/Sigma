@@ -3,7 +3,6 @@ import yaml
 import re
 from importlib import machinery
 import os
-# from main import MyClient
 app_path = "./apps/"
 
 
@@ -73,7 +72,7 @@ class AppManager(object):
         instance = my_module.Worker(self.client)
         await instance.join(message)
 
-    async def command(self, message: discord.Message, command: str, app: str):
+    async def command(self, message: discord.Message, command: str, app: str, point: int):
         if not message.content == command:
             args = re.sub("[{}]".format(command), "", message.content, len(command))
         else:
@@ -84,7 +83,7 @@ class AppManager(object):
                     if args.split()[0] == "help":
                         return await self.continue_app[app].join(message)
 
-                return await self.continue_app[app].command(message, command, args.split())
+                return await self.continue_app[app].command(message, command, args.split(), point)
             except IndexError:
                 return False
         loader = machinery.SourceFileLoader(app, app_path + app + '/worker.py')
@@ -94,7 +93,7 @@ class AppManager(object):
             if args.split()[0] == "help":
                 await instance.join(message)
         try:
-            return await instance.command(message, command, args.split())
+            return await instance.command(message, command, args.split(), point)
         except IndexError:
             return False
 
@@ -127,10 +126,10 @@ class AppManager(object):
             except AttributeError:
                 raise
 
-    async def catch_command(self, message: discord.Message):
+    async def catch_command(self, message: discord.Message, point):
         for x in self.commands:
             if message.content.startswith(x):
-                return [await self.command(message, x, self._commands[x]), self._commands[x]]
+                return [await self.command(message, x, self._commands[x], point), self._commands[x]]
         return [False, False]
 
     async def logout(self):

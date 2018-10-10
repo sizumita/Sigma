@@ -99,7 +99,7 @@ class MyClient(discord.Client):
             if message.content == "sigma stop" and message.author.id == 212513828641046529:
                 await self.app_manager.logout()
             # アプリコマンド
-            data = await self.app_manager.catch_command(message)
+            data = await self.app_manager.catch_command(message, get_user(message.author.id).get_point())
             if not data == [False, False]:
                 app, command = data[0], data[1]
                 await self.logger.do_command(command=command, content=message.content,
@@ -122,7 +122,7 @@ class MyClient(discord.Client):
             if message.content.startswith("sigma"):
                 if not str(message.author.id) in users.keys():
                     await self.sigma_start(message)
-                app = await self.load_os(message)
+                app = await self.load_os(message, get_user(message.author.id))
                 await self.logger.do_command(command="sigma", content=message.content,
                                              author_id=message.author.id, guild_id=message.guild.id,
                                              channel_id=message.channel.id, message=message)
@@ -172,8 +172,8 @@ class MyClient(discord.Client):
 
         await self.send(message.channel, f"ユーザーデータのロード完了。\nこんにちは、{message.author.name}さん。")
 
-    async def load_os(self, message: discord.Message):
-        return await self.app_manager.command(message, 'sigma', 'os')
+    async def load_os(self, message: discord.Message, point):
+        return await self.app_manager.command(message, 'sigma', 'os', point)
 
     async def rc(self, message: discord.Message):
         channel = message.channel
@@ -218,7 +218,8 @@ class MyClient(discord.Client):
 def get_user(uid: int) -> User:
     if str(uid) in users.keys():
         return users[str(uid)]
-    return False
+    users[str(uid)] = User.User(uid, client)
+    return users[str(uid)]
 
 
 def shutdown():
