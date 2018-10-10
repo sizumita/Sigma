@@ -94,7 +94,7 @@ class MyClient(discord.Client):
         try:
             if await self.check(message):
                 return
-            self.loop.create_task(self.point_task(message.author))
+            self.loop.create_task(self.point_task(message))
             self.loop.create_task(self.using(message))
             if message.content == "sigma stop" and message.author.id == 212513828641046529:
                 await self.app_manager.logout()
