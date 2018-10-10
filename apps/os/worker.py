@@ -109,6 +109,9 @@ contract_e.add_field(name="第3条（利用制限および登録抹消）", valu
 当チームは，当チームの運営行為によりユーザーに生じたいかなる損害についても、一切の責任を免責されるものとします。
 また、ユーザー様同士のトラブルにつきましては、自己責任による当事者同士の解決を基本とし、当チームは一切の責任を免責されるものとします。
 ''')
+point_menu = """
+
+"""
 
 
 def cleanup_code(content):
@@ -238,6 +241,11 @@ class Worker(BaseWorker):
                 return True
             if args[0] == "contract":
                 await author.send(embed=contract_e)
+                return True
+            if args[0] == "point":
+                embed = discord.Embed(title=f"{message.author.name}さんのpoint", description=f"{point}ポイント")
+                embed.add_field(name="ポイント入金（未実装）", value="実装まで今しばらくお待ちください。")
+                await message.channel.send(embed=embed)
                 return True
         if command == "!os":
             if args[0] == "com_logs":
