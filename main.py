@@ -31,6 +31,7 @@ class MyClient(discord.Client):
         self.delete_check = []
         self.useing = []
         self.add_point_user = []
+        self.running = False
 
     async def using(self, message: discord.Message):
         self.useing.append(message.author.id)
@@ -69,8 +70,12 @@ class MyClient(discord.Client):
         self.logger = logger(self)
         self.error = self.get_channel(497046680806621184)
         await self.app_manager.set_up()
+        self.running = True
 
     async def on_message(self, message: discord.Message):
+        if not self.running:
+            return
+        await client.wait_until_ready()
         global system_ban_id, users, sessions
         if message.author.id == 212513828641046529:
             if message.content == "sigma rc":
