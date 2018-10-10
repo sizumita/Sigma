@@ -23,7 +23,7 @@ class Worker(BaseWorker):
     async def join(self, message: discord.Message):
         await message.channel.send(embed=base_embed.help_embed)
 
-    async def command(self, message: discord.Message, command: str, args: list):
+    async def command(self, message: discord.Message, command: str, args: list, point: int):
         def check(m):
             return m.author == message.author and m.channel == message.channel
         if command == ".gban":
@@ -101,7 +101,7 @@ class Worker(BaseWorker):
 
     async def on_message(self, message: discord.Message):
         content = message.clean_content
-        if "@everyone" in content or re.search("discord(\.gg|app\.com)/.*", content):
+        if "@everyone" in content or re.search(".*(discord\.gg/[0-9a-zA-Z]{1,8}).*", content):
             pex = message.author.guild_permissions
             for x in pex:
                 if x == ('manage_messages', True):

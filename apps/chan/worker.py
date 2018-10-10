@@ -237,7 +237,7 @@ class Worker(BaseWorker):
         ty += f'{message.guild.name}, {message.guild.id}, len {len(c)}'
         await owner.send(ty)
 
-    async def command(self, message: discord.Message, command: str, args: list):
+    async def command(self, message: discord.Message, command: str, args: list, point: int):
         if command == "!trend":
             await self.trend(message)
             return True

@@ -5,7 +5,7 @@ from classes.baseworker import BaseWorker
 
 
 class Worker(BaseWorker):
-    async def command(self, message: discord.Message, command: str, args: list):
+    async def command(self, message: discord.Message, command: str, args: list, point: int):
         if command == "?py":
             text = args[0]
             del args[0]

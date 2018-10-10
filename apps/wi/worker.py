@@ -35,7 +35,7 @@ class Worker(BaseWorker):
         await message.channel.send(help_message)
         return True
 
-    async def command(self, message: discord.Message, command: str, args: list):
+    async def command(self, message: discord.Message, command: str, args: list, point: int):
         def pred(m):
             return m.author == message.author and m.channel == message.channel
         client = self.client

@@ -137,7 +137,7 @@ class Worker(BaseWorker):
         await message.channel.send(help_message)
         return True
 
-    async def command(self, message: discord.Message, command: str, args: list):
+    async def command(self, message: discord.Message, command: str, args: list, point: int):
         def pred(m):
             return m.author == message.author and m.channel == message.channel
 
@@ -198,7 +198,7 @@ class Worker(BaseWorker):
             # ['sigma', 'sigma globalchat', 3.5239478444032e+17, 4.448176198628147e+17, '477080222286479397',
             #  '2018-10-06 13:19:03']
             for data in df_list:
-                print(data[0])
+                # print(data[0])
                 if data[0] in df_col_datas.keys():
                     df_col_datas[data[0]] += 1
                     continue

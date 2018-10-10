@@ -15,7 +15,7 @@ class BaseWorker:
     async def join(self, message: discord.Message):
         ...
 
-    async def command(self, message: discord.Message, command: str, args: list):
+    async def command(self, message: discord.Message, command: str, args: list, point: int):
         return True
 
     async def logout(self):

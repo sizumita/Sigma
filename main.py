@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 owners = ["212513828641046529"]
 users = {}
 sessions = {}
-add_point_user = []
 app_path = "./apps/"
 system_ban_id = []
 try:
@@ -23,12 +22,6 @@ except:
     pass
 
 
-async def point_task(author):
-    add_point_user.append(author.id)
-    await asyncio.sleep(60)
-    add_point_user.remove(author.id)
-
-
 class MyClient(discord.Client):
     def __init__(self, **options):
         super().__init__(**options)
@@ -37,6 +30,33 @@ class MyClient(discord.Client):
         self.error = None
         self.delete_check = []
         self.useing = []
+        self.add_point_user = []
+
+    async def using(self, message: discord.Message):
+        self.useing.append(message.author.id)
+        await asyncio.sleep(5)
+        self.useing.remove(message.author.id)
+
+    async def log(self, message: discord.Message):
+        try:
+            if not message.author.bot:
+                if message.attachments and not message.author.bot:
+                    await self.logger.send_image(message)
+                elif "discord.gg" in message.content:
+                    await self.logger.send_invite(message)
+        except:
+            pass
+
+    async def point_task(self, message: discord.Message):
+        if message.author.id in self.add_point_user:
+            return
+        user = get_user(message.author.id)
+        if isinstance(user, bool):
+            return
+        user.add_point(random.randint(5, 15))
+        self.add_point_user.append(message.author.id)
+        await asyncio.sleep(60)
+        self.add_point_user.remove(message.author.id)
 
     async def on_ready(self):
         print('Logged in as')
@@ -51,15 +71,7 @@ class MyClient(discord.Client):
         await self.app_manager.set_up()
 
     async def on_message(self, message: discord.Message):
-        global system_ban_id, users, sessions, add_point_user
-        try:
-            if not message.author.bot:
-                if message.attachments and not message.author.bot:
-                    await self.logger.send_image(message)
-                elif "discord.gg" in message.content:
-                    await self.logger.send_invite(message)
-        except:
-            pass
+        global system_ban_id, users, sessions
         if message.author.id == 212513828641046529:
             if message.content == "sigma rc":
                 await self.rc(message)
@@ -68,11 +80,17 @@ class MyClient(discord.Client):
                 self.useing.clear()
                 await message.channel.send("クリーン完了")
                 return
+            if message.content.startswith("sigma app reload"):
+                await self.app_manager.logout()
+                await self.app_manager.set_up()
+                await message.channel.send("reload完了")
+                return
 
         try:
             if await self.check(message):
                 return
-            self.useing.append(message.author.id)
+            self.loop.create_task(self.point_task(message.author))
+            self.loop.create_task(self.using(message))
             if message.content == "sigma stop" and message.author.id == 212513828641046529:
                 await self.app_manager.logout()
             # アプリコマンド
@@ -83,7 +101,6 @@ class MyClient(discord.Client):
                                              author_id=message.author.id, guild_id=message.guild.id,
                                              channel_id=message.channel.id, message=message)
                 if app:
-                    self.useing.remove(message.author.id)
                     if not type(app) == bool:
                         if type(app) == int:
                             user = get_user(message.author.id)
@@ -113,29 +130,13 @@ class MyClient(discord.Client):
                             await self.app_manager.show_apps(message)
                 await self.app_manager.start(message)
 
-            if message.author.id == "212513828641046529":
-                if message.content.startswith("sigma app reload"):
-                    await self.app_manager.set_up()
-
-            self.useing.remove(message.author.id)
-
         except:
             import traceback
             trace = traceback.format_exc()
-            await self.error.send(trace)
-            self.useing.remove(message.author.id)
+            await self.get_channel(497046680806621184).send(trace)
 
         else:
             await self.app_manager.message_on(message)
-            if not message.author.id in add_point_user:
-                try:
-                    user = get_user(message.author.id)
-                    if isinstance(user, bool):
-                        return
-                    user.add_point(random.randint(5, 15))
-                    self.loop.create_task(point_task(message.author))
-                except:
-                    pass
 
     async def on_member_join(self, member: discord.Member):
         await self.app_manager.member_join(member)

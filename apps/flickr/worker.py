@@ -18,7 +18,7 @@ class Worker(BaseWorker):
         await message.channel.send(help_message)
         return True
 
-    async def command(self, message: discord.Message, command: str, args: list):
+    async def command(self, message: discord.Message, command: str, args: list, point: int):
         channel = message.channel
         if command == "!fse":
             keyword = args[0]

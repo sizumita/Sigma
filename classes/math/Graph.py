@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+
 import numpy as np
+import seaborn as sns
 # from matplotlib.font_manager import FontProperties
 # font_path = '/usr/share/fonts/truetype/fonts-japanese-gothic.ttf'
 # font_prop = FontProperties(fname=font_path)
@@ -22,3 +24,11 @@ def pie_chart(data: list, label: list, file_name: str):
     plt.savefig(f"{file_name}", bbox_inches='tight', pad_inches=0.05)
     return True
 
+
+def bar(data: list, label: list, file_name: str):
+    color = "#87EF72"
+    plt.style.use('ggplot')
+    plt.rcParams.update({'font.size': 15})
+    plt.bar(label, data, color=color)
+    plt.savefig(f"{file_name}", bbox_inches='tight', pad_inches=0.05)
+    return True
