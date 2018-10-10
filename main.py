@@ -122,7 +122,7 @@ class MyClient(discord.Client):
             if message.content.startswith("sigma"):
                 if not str(message.author.id) in users.keys():
                     await self.sigma_start(message)
-                app = await self.load_os(message, get_user(message.author.id))
+                app = await self.load_os(message, get_user(message.author.id).get_point())
                 await self.logger.do_command(command="sigma", content=message.content,
                                              author_id=message.author.id, guild_id=message.guild.id,
                                              channel_id=message.channel.id, message=message)

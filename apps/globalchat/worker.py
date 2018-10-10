@@ -70,8 +70,7 @@ class Worker(BaseWorker):
         self.data_r18 = {}
         self.speak_data = {}
         self.nick = {}
-        self.conn = None
-        self.cur = None
+        self.ad = {}
         super().__init__(client)
         client.loop.create_task(self.load())
         client.loop.create_task(self.tips())
@@ -108,10 +107,6 @@ class Worker(BaseWorker):
                 await self.client.get_channel(channel).send("sigma OS 起動します...")
             except AttributeError:
                 pass
-        # self.conn = await aiomysql.connect(host='localhost', port=3306,
-        #                                    user='root', password='',
-        #                                    db='test_pymysql', loop=self.client.loop)
-        # self.cur = await self.conn.cursor()
 
     async def join(self, message: discord.Message):
         await message.channel.send(help_message)
@@ -312,8 +307,4 @@ class Worker(BaseWorker):
         while not self.client.is_closed():
             content = "---tips---\n" + random.choice(tips)
             await self.send_webhook(guild, channel, self.client.user, content, [])
-            await asyncio.sleep(1800)
-
-    # async def log(self, message: discord.Message):
-    #     data = [(message.guild.id, message.author.id, message.created_at)]
-    #     await self.cur.executemany("INSERT INTO logs VALUES(%s,%s,%s);", data)
+            await asyncio.sleep(10800)
