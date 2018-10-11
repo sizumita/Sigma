@@ -29,14 +29,22 @@ commands(owner only):
 !global del [id] delete message for id
 ```
 """
-ad_help = """
-準備中
+ad_help = """```
+あなたのポイント:{}point
+
+commands:
+
+!ad new -> 新しい広告を作成します。作成に800コインが必要です。
+
+!ad show -> 現在の広告を表示します。
+```
 """
 tips = [
     "`!global sd`で、global chatの使用率を確認することができます。",
     "`!fse`で、FlickrAPIで、画像を検索することができます。",
     "`!timer`で、タイマーを起動することができます。",
     "`!global all`で、全てのglobal chatにコネクトしているチャンネルを見ることができます。",
+    "Sigmaの公式サーバーはこちら -> https://discord.gg/fVsAjm9"
 ]
 
 
@@ -102,10 +110,15 @@ class Worker(BaseWorker):
                 self.nick = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
             pass
+        try:
+            async with aiofiles.open('./datas/ad.pickle', mode='rb') as f:
+                self.ad = pickle.loads(await f.read())
+        except (FileNotFoundError, EOFError):
+            pass
         for channel in self.channels:
             try:
                 await self.client.get_channel(channel).send("sigma OS 起動します...")
-            except AttributeError:
+            except (AttributeError, discord.errors.Forbidden):
                 pass
 
     async def join(self, message: discord.Message):
@@ -129,16 +142,28 @@ class Worker(BaseWorker):
     async def logout(self):
         for channel in self.channels:
             await self.client.get_channel(channel).send("sigma OS 終了します...")
-        with open('./datas/global.pickle', mode='wb') as f:
-            pickle.dump(self.data, f)
-        with open('./datas/global-r18.pickle', mode='wb') as f:
-            pickle.dump(self.data_r18, f)
-        with open('./datas/global_speak_data.pickle', mode='wb') as f:
-            pickle.dump(self.speak_data, f)
-        with open('./datas/global_nick.pickle', mode='wb') as f:
-            pickle.dump(self.nick, f)
+        try:
+            with open('./datas/global.pickle', mode='wb') as f:
+                pickle.dump(self.data, f)
+            with open('./datas/global-r18.pickle', mode='wb') as f:
+                pickle.dump(self.data_r18, f)
+            with open('./datas/global_speak_data.pickle', mode='wb') as f:
+                pickle.dump(self.speak_data, f)
+            with open('./datas/global_nick.pickle', mode='wb') as f:
+                pickle.dump(self.nick, f)
+            with open('./datas/ad.pickle', mode='wb') as f:
+                pickle.dump(self.ad, f)
+        except:
+            import traceback
+            trace = traceback.format_exc()
+            await self.client.get_channel(497046680806621184).send(trace)
 
     async def command(self, message: discord.Message, command: str, args: list, point: int):
+        def pred(m):
+            return m.author == message.author and m.channel == message.channel
+
+        def check(reaction, user):
+            return user == message.author and str(reaction.emoji) in ['🆗', '🙅']
         if command == "!global":
             if args[0] == "delete":
                 delete_text = self.messages[int(args[1])]['content']
@@ -180,12 +205,48 @@ class Worker(BaseWorker):
             await message.channel.send(embed=embed)
 
         elif command == "!ad":
-            await message.channel.send(ad_help)
-            return True
+            if not args:
+                await message.channel.send(ad_help.format(point))
+                return True
+            if args[0] == "new":
+                channel = message.channel
+                if point < 800:
+                    await message.channel.send(f"あなたは必要なpointを持っていません！{point}<800")
+                    return
+                embed = discord.Embed(title="新しい広告を作成します...", description="広告の文章を入力してください..入力したら、"
+                                                                          "\nここにプレビューが表示されます。")
+                m = await message.channel.send(embed=embed)
+                try:
+                    mess = await self.client.wait_for('message', check=pred, timeout=30.0)
+                except asyncio.TimeoutError:
+                    await message.channel.send("👎")
+                    return False
+                if len(mess.content) > 100:
+                    await channel.send("文章は100文字以内でお願いします。")
+                    return -5
+                embed.add_field(name="プレビュー", value=mess.content)
+                embed.add_field(name="これで広告を作成しますか？", value="作成する場合は🆗、やり直す場合は🙅を押してください。")
+                await m.edit(embed=embed)
+                await m.add_reaction('🙅')
+                await m.add_reaction('🆗')
+                try:
+                    reaction, user = await self.client.wait_for('reaction_add', timeout=30.0, check=check)
+                except asyncio.TimeoutError:
+                    await m.channel.send('👎')
+                    return False
+                if reaction == '🙅':
+                    await m.channel.send("もう一度最初からやり直してください。")
+                    return True
+                await channel.send("全ての設定が完了しました！６回広告が表示されます！")
+                self.ad[message.author.id] = {"content": mess.content, "num": 6}
+                return -800
 
     async def _connect(self, message: discord.Message, *, is_r18=False):
         if not is_r18:
-            webhook = await message.channel.create_webhook(name="global-chat")
+            if message.channel.webhooks:
+                webhook = message.channel.webhooks[0]
+            else:
+                webhook = await message.channel.create_webhook(name="global-chat")
             self.channels.append(message.channel.id)
             self.webhooks.append(webhook.url)
             self.data[webhook.url] = message.channel.id
@@ -194,7 +255,10 @@ class Worker(BaseWorker):
             self.speak_data[message.guild.id] = 0
             return True
         else:
-            webhook = await message.channel.create_webhook(name="global-chat-r18")
+            if message.channel.webhooks:
+                webhook = message.channel.webhooks[0]
+            else:
+                webhook = await message.channel.create_webhook(name="global-chat-r18")
             self.channels_r18.append(message.channel.id)
             self.webhooks_r18.append(webhook.url)
             self.data_r18[webhook.url] = message.channel.id
@@ -202,15 +266,16 @@ class Worker(BaseWorker):
             await message.channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
             return True
 
-    async def send_webhook(self, guild: discord.Guild, channel: discord.TextChannel, author: discord.Member, content: str, attachments: list, *, is_r18=False):
+    async def send_webhook(self, guild: discord.Guild, channel: discord.TextChannel, author: discord.Member, content: str, attachments: list, *, is_r18=False, is_ad=False):
         if author.id in self.nick:
             username = self.nick[author.id]
         else:
             username = author.name
-        if not is_r18:
-            content = content.replace("@", "＠")
+        if not is_ad:
             if re.search("discord\.gg", content) or content.startswith("!"):
                 return -1
+        if not is_r18:
+            content = content.replace("@", "＠")
             embed = discord.Embed(title=content)
             try:
                 if attachments:
@@ -250,8 +315,6 @@ class Worker(BaseWorker):
             return True
         else:
             content = content.replace("@", "＠")
-            if re.search("discord\.gg", content) or content.startswith("!"):
-                return -1
             embed = discord.Embed(title=content)
             try:
                 if attachments:
@@ -297,7 +360,7 @@ class Worker(BaseWorker):
         guild = self.client.get_guild(499345248359809026)
         channel = self.client.get_channel(499345248359809028)
         content = ""
-        await self.send_webhook(guild, channel, self.client.user, content, [])
+        await self.send_webhook(guild, channel, self.client.user, content, [], is_ad=True)
 
     async def tips(self):
         await self.client.wait_until_ready()
@@ -306,5 +369,5 @@ class Worker(BaseWorker):
         channel = self.client.get_channel(499345248359809028)
         while not self.client.is_closed():
             content = "---tips---\n" + random.choice(tips)
-            await self.send_webhook(guild, channel, self.client.user, content, [])
+            await self.send_webhook(guild, channel, self.client.user, content, [], is_ad=True)
             await asyncio.sleep(10800)
