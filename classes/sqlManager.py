@@ -29,8 +29,7 @@ class SQLManager(object):
         with closing(sqlite3.connect(self.dbname)) as conn:
             c = conn.cursor()
             select_sql = 'select * from users'
-            for row in c.execute(select_sql):
-                print(row)
+            return [row for row in c.execute(select_sql)]
 
     def get_point(self, user_id: int) -> int:
         with closing(sqlite3.connect(self.dbname)) as conn:

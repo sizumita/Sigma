@@ -243,8 +243,8 @@ class Worker(BaseWorker):
 
     async def _connect(self, message: discord.Message, *, is_r18=False):
         if not is_r18:
-            if message.channel.webhooks:
-                webhook = message.channel.webhooks[0]
+            if await message.channel.webhooks:
+                webhook = await message.channel.webhooks[0]
             else:
                 webhook = await message.channel.create_webhook(name="global-chat")
             self.channels.append(message.channel.id)
@@ -255,8 +255,8 @@ class Worker(BaseWorker):
             self.speak_data[message.guild.id] = 0
             return True
         else:
-            if message.channel.webhooks:
-                webhook = message.channel.webhooks[0]
+            if await message.channel.webhooks:
+                webhook = await message.channel.webhooks[0]
             else:
                 webhook = await message.channel.create_webhook(name="global-chat-r18")
             self.channels_r18.append(message.channel.id)
