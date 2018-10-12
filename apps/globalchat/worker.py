@@ -242,11 +242,14 @@ class Worker(BaseWorker):
                 return -800
 
     async def _connect(self, message: discord.Message, *, is_r18=False):
+        webhook = None
+        if await message.channel.webhooks():
+            for x in await message.channel.webhooks():
+                webhook = x
+                break
+        else:
+            webhook = await message.channel.create_webhook(name="global-chat")
         if not is_r18:
-            if await message.channel.webhooks():
-                webhook = await message.channel.webhooks()[0]
-            else:
-                webhook = await message.channel.create_webhook(name="global-chat")
             self.channels.append(message.channel.id)
             self.webhooks.append(webhook.url)
             self.data[webhook.url] = message.channel.id
@@ -255,10 +258,6 @@ class Worker(BaseWorker):
             self.speak_data[message.guild.id] = 0
             return True
         else:
-            if await message.channel.webhooks():
-                webhook = await message.channel.webhooks()[0]
-            else:
-                webhook = await message.channel.create_webhook(name="global-chat-r18")
             self.channels_r18.append(message.channel.id)
             self.webhooks_r18.append(webhook.url)
             self.data_r18[webhook.url] = message.channel.id
@@ -288,17 +287,20 @@ class Worker(BaseWorker):
             embed.set_author(name=str(author), icon_url=author.avatar_url)
             embed.set_footer(text=guild.name, icon_url=guild.icon_url)
             # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
+            message_ids = []
             async with aiohttp.ClientSession() as session:
                 for hook_url in self.webhooks:
                     try:
                         if self.data[hook_url] == channel.id:
                             continue
                         webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
-                        await webhook.send(
-                                           # content + f'\nuserid:{message.author.id}',
+                        webhook_message = await webhook.send(
+                                           content,
                                            username=f'{username} id:{self.num}',
                                            avatar_url=author.avatar_url,
-                                           embed=embed)
+                                           embed=embed
+                        )
+                        print(webhook_message.id)
                     except discord.errors.NotFound:
                         pass
             self.messages[self.num] = {
@@ -360,6 +362,8 @@ class Worker(BaseWorker):
         guild = self.client.get_guild(499345248359809026)
         channel = self.client.get_channel(499345248359809028)
         content = ""
+        while not self.client.is_closed():
+            pass
         await self.send_webhook(guild, channel, self.client.user, content, [], is_ad=True)
 
     async def tips(self):
