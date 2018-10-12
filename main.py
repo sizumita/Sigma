@@ -64,7 +64,7 @@ class MyClient(discord.Client):
         await self.app_manager.set_up()
         self.running = True
         try:
-            with open('./logs/system_ban.txt', 'w') as f:
+            with open('./logs/system_ban.txt', 'r') as f:
                 text = f.read()
                 for x in text.split(','):
                     self.system_ban_id.append(int(x))
@@ -76,7 +76,7 @@ class MyClient(discord.Client):
             return
         await client.wait_until_ready()
         global users
-        print(self.system_ban_id)
+        # print(self.system_ban_id)
         if message.author.id == 212513828641046529:
             if message.content == "sigma rc":
                 await self.rc(message)
