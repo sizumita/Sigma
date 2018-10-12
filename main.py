@@ -10,16 +10,7 @@ from dotenv import load_dotenv
 
 owners = ["212513828641046529"]
 users = {}
-sessions = {}
 app_path = "./apps/"
-system_ban_id = []
-try:
-    with open('./logs/system_ban.txt', 'w') as f:
-        text = f.read()
-        for x in text.split(','):
-            system_ban_id.append(int(x))
-except:
-    pass
 
 
 class MyClient(discord.Client):
@@ -32,6 +23,7 @@ class MyClient(discord.Client):
         self.useing = []
         self.add_point_user = []
         self.running = False
+        self.system_ban_id = []
 
     async def using(self, message: discord.Message):
         self.useing.append(message.author.id)
@@ -71,12 +63,20 @@ class MyClient(discord.Client):
         self.error = self.get_channel(497046680806621184)
         await self.app_manager.set_up()
         self.running = True
+        try:
+            with open('./logs/system_ban.txt', 'w') as f:
+                text = f.read()
+                for x in text.split(','):
+                    self.system_ban_id.append(int(x))
+        except:
+            pass
 
     async def on_message(self, message: discord.Message):
         if not self.running:
             return
         await client.wait_until_ready()
-        global system_ban_id, users, sessions
+        global users
+        print(self.system_ban_id)
         if message.author.id == 212513828641046529:
             if message.content == "sigma rc":
                 await self.rc(message)
@@ -102,30 +102,29 @@ class MyClient(discord.Client):
             data = await self.app_manager.catch_command(message, get_user(message.author.id).get_point())
             if not data == [False, False]:
                 app, command = data[0], data[1]
-                await self.logger.do_command(command=command, content=message.content,
-                                             author_id=message.author.id, guild_id=message.guild.id,
-                                             channel_id=message.channel.id, message=message)
+
                 if app:
                     if not type(app) == bool:
                         if type(app) == int:
                             user = get_user(message.author.id)
                             user.add_point(app)
                         elif type(app) == str:
+                            print(app)
                             if app.startswith("ban "):
                                 user_id = app.split()[1]
-                                system_ban_id.append(int(user_id))
+                                self.system_ban_id.append(int(user_id))
                             elif app.startswith("unban "):
                                 user_id = app.split()[1]
-                                system_ban_id.remove(int(user_id))
+                                self.system_ban_id.remove(int(user_id))
                     return True
+                await self.logger.do_command(command=command, content=message.content,
+                                             author_id=message.author.id, guild_id=message.guild.id,
+                                             channel_id=message.channel.id, message=message)
 
             if message.content.startswith("sigma"):
                 if not str(message.author.id) in users.keys():
                     await self.sigma_start(message)
                 app = await self.load_os(message, get_user(message.author.id).get_point())
-                await self.logger.do_command(command="sigma", content=message.content,
-                                             author_id=message.author.id, guild_id=message.guild.id,
-                                             channel_id=message.channel.id, message=message)
                 if type(app) != bool:
                     if type(app) == int:
                         user = get_user(message.author.id)
@@ -133,15 +132,16 @@ class MyClient(discord.Client):
                     if type(app) == str:
                         if app == "apps":
                             await self.app_manager.show_apps(message)
+                await self.logger.do_command(command="sigma", content=message.content,
+                                             author_id=message.author.id, guild_id=message.guild.id,
+                                             channel_id=message.channel.id, message=message)
                 await self.app_manager.start(message)
+                await self.app_manager.message_on(message)
 
         except:
             import traceback
             trace = traceback.format_exc()
             await self.get_channel(497046680806621184).send(trace)
-
-        else:
-            await self.app_manager.message_on(message)
 
     async def on_member_join(self, member: discord.Member):
         await self.app_manager.member_join(member)
@@ -203,7 +203,7 @@ class MyClient(discord.Client):
                 return True
         except:
             pass
-        if message.author.id in system_ban_id:
+        if message.author.id in self.system_ban_id:
             return True
         if message.author.bot:
             return True
@@ -214,6 +214,11 @@ class MyClient(discord.Client):
 
         return False
 
+    def shutdown(self):
+        with open('./logs/system_ban.txt', 'w') as f:
+            text = ",".join([str(i) for i in self.system_ban_id])
+            f.write(text)
+
 
 def get_user(uid: int) -> User:
     if str(uid) in users.keys():
@@ -222,19 +227,10 @@ def get_user(uid: int) -> User:
     return users[str(uid)]
 
 
-def shutdown():
-    with open('./logs/system_ban.txt', 'w') as f:
-        text = ",".join([str(i) for i in system_ban_id])
-        f.write(text)
-    client.loop.stop()
-
-
 client = MyClient()
 
 dotenv_path = join(dirname(__file__), '../sigma.env')
 load_dotenv(dotenv_path)
-try:
-    client.run(os.environ.get("TOKEN"))
-
-except:
-    shutdown()
+client.run(os.environ.get("TOKEN"))
+print(1)
+client.shutdown()

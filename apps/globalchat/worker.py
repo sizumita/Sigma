@@ -9,7 +9,6 @@ from discord import Webhook, AsyncWebhookAdapter
 import aiohttp
 from classes.math.Graph import pie_chart
 import asyncio
-import aiomysql
 help_message = """
 ```
 global-chat v2.0
@@ -46,6 +45,15 @@ tips = [
     "`!global all`で、全てのglobal chatにコネクトしているチャンネルを見ることができます。",
     "Sigmaの公式サーバーはこちら -> https://discord.gg/fVsAjm9"
 ]
+
+
+def create_key():
+    one = random.choice("q,w,e,r,t,y,u,i,o,p,a,s,d,f,g,h,j,k,l,z,x,c,v,b,n,m".split(","))
+    two = random.randint(0, 9)
+    three = random.randint(0, 9)
+    four = random.randint(0, 9)
+    five = random.randint(0, 9)
+    return "{0}/{1}{2}{3}{4}".format(one, two, three, four, five)
 
 
 @owner_only
@@ -275,7 +283,7 @@ class Worker(BaseWorker):
                 return -1
         if not is_r18:
             content = content.replace("@", "＠")
-            embed = discord.Embed(title=content)
+            embed = discord.Embed(description=content)
             try:
                 if attachments:
                     embed.set_image(url=attachments[0].url)
@@ -294,22 +302,20 @@ class Worker(BaseWorker):
                         if self.data[hook_url] == channel.id:
                             continue
                         webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
+                        webhook._adapter.store_user = webhook._adapter._store_user
                         webhook_message = await webhook.send(
                                            content,
                                            username=f'{username} id:{self.num}',
                                            avatar_url=author.avatar_url,
-                                           embed=embed
+                                           embed=embed,
+                                           wait=True
                         )
-                        # print(webhook_message.id)
+                        message_ids.append(webhook_message.id)
+                        self.messages[self.num] = {
+                            "ids": message_ids,
+                        }
                     except discord.errors.NotFound:
                         pass
-            self.messages[self.num] = {
-                                       "content": content,
-                                       "embed": embed.to_dict(),
-                                       "user_id": author.id,
-                                       "guild": guild.id,
-                                       }
-            self.num += 1
             if not guild.id in self.speak_data.keys():
                 self.speak_data[guild.id] = 1
                 return True
