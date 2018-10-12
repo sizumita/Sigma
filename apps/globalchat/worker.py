@@ -358,8 +358,11 @@ class Worker(BaseWorker):
         data = []
         label = []
         for key, value in self.speak_data.items():
-            data.append(value)
-            label.append(self.client.get_guild(key).name)
+            try:
+                label.append(self.client.get_guild(key).name)
+                data.append(value)
+            except AttributeError:
+                del self.speak_data[key]
         pie_chart(data, label, "./datas/graph/speak_data.png")
         file = discord.File("./datas/graph/speak_data.png")
         await message.channel.send("global-chat 使用率のグラフです。", file=file)
