@@ -300,7 +300,7 @@ class Worker(BaseWorker):
                                            avatar_url=author.avatar_url,
                                            embed=embed
                         )
-                        print(webhook_message.id)
+                        # print(webhook_message.id)
                     except discord.errors.NotFound:
                         pass
             self.messages[self.num] = {
