@@ -26,3 +26,6 @@ class BaseWorker:
 
     async def member_remove(self, member: discord.Member):
         ...
+
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.Member):
+        ...

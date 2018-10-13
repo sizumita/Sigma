@@ -139,3 +139,11 @@ class AppManager(object):
             except AttributeError:
                 pass
         return True
+
+    async def reaction_add(self, reaction: discord.Reaction, user: discord.Member):
+        for key, value in self.continue_app.items():
+            try:
+                await value.on_reaction_add(reaction, user)
+            except AttributeError:
+                raise
+        return True

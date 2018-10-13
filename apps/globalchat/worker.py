@@ -47,6 +47,12 @@ tips = [
 ]
 
 
+def get_zero(tuple_list):
+    for x in tuple_list:
+        print(tuple_list)
+        yield x[0]
+
+
 def create_key():
     one = random.choice("q,w,e,r,t,y,u,i,o,p,a,s,d,f,g,h,j,k,l,z,x,c,v,b,n,m".split(","))
     two = random.randint(0, 9)
@@ -135,10 +141,11 @@ class Worker(BaseWorker):
 
     async def on_message(self, message: discord.Message):
         if message.channel.id in self.channels:
+            # print(self.messages)
             await self.send_webhook(message.guild, message.channel, message.author, message.content, message.attachments)
             return True
         if message.channel.id in self.channels_r18:
-            await self.send_webhook(message.guild, message.channel, message.author, message.content, message.attachments, is_r18=True)
+            await self.send_webhook(message.guild, message.channel, message.author, message.content, message.attachments, is_r18=True, message=message)
             return True
         if message.channel.name == "global-chat":
             await self._connect(message)
@@ -210,7 +217,7 @@ class Worker(BaseWorker):
                                               f'guild:{guild.name}\n'
                                               f'author_id:{author.id}'
                                   )
-            embed.add_field(name="content", value=mess['content'])
+            embed.add_field(name="content", value=mess['content'] if mess['content'] else "なし")
             await message.channel.send(embed=embed)
 
         elif command == "!ad":
@@ -275,6 +282,8 @@ class Worker(BaseWorker):
             return True
 
     async def send_webhook(self, guild: discord.Guild, channel: discord.TextChannel, author: discord.Member, content: str, attachments: list, *, is_r18=False, is_ad=False, message=None):
+        if len(self.messages.keys()) > 150:
+            self.messages.clear()
         if author.id in self.nick:
             username = self.nick[author.id]
         else:
@@ -294,10 +303,9 @@ class Worker(BaseWorker):
             if len(content) > 250:
                 await channel.send(f"{author.mention},250文字以上のメッセージは送信できません。")
                 return False
-            # embed.set_author(name=str(author), icon_url=author.avatar_url)
-            # embed.set_footer(text=guild.name, icon_url=guild.icon_url)
-            # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
             message_ids = []
+            if message:
+                message_ids.append(message.id)
             key = create_key()
             async with aiohttp.ClientSession() as session:
                 for hook_url in self.webhooks:
@@ -314,7 +322,7 @@ class Worker(BaseWorker):
                                            embed=embed if embed else None,
                                            wait=True
                         )
-                        message_ids.append(webhook_message.id)
+                        message_ids.append((webhook_message.id, self.data[hook_url]))
                         self.messages[key] = {
                             "ids": message_ids,
                             "embed": embed,
@@ -322,7 +330,8 @@ class Worker(BaseWorker):
                             "channel": channel.id,
                             "guild": guild.id,
                             "author": author.id,
-                            "content": content
+                            "content": content,
+                            "reactions": ""
                         }
                     except discord.errors.NotFound:
                         pass
@@ -346,6 +355,8 @@ class Worker(BaseWorker):
             embed.set_footer(text=guild.name, icon_url=guild.icon_url)
             # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
             message_ids = []
+            if message:
+                message_ids.append(message.id)
             async with aiohttp.ClientSession() as session:
                 for hook_url in self.webhooks:
                     try:
@@ -360,7 +371,7 @@ class Worker(BaseWorker):
                             embed=embed,
                             wait=True
                         )
-                        message_ids.append(webhook_message.id)
+                        message_ids.append((webhook_message.id, webhook_message.channel.id))
                         self.messages[self.num] = {
                             "ids": message_ids,
                         }
@@ -384,6 +395,26 @@ class Worker(BaseWorker):
         pie_chart(data, label, "./datas/graph/speak_data.png")
         file = discord.File("./datas/graph/speak_data.png")
         await message.channel.send("global-chat 使用率のグラフです。", file=file)
+
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.Member):
+        # print(reaction.message.channel.id)
+        if reaction.message.channel.id in self.channels:
+            for key, value in self.messages.items():
+                if reaction.message.id in list(get_zero(value["ids"])):
+                    reaction_text = ''
+                    if value['reactions']:
+                        reactions = value['reactions'].split("\n")
+                        for x in reactions:
+                            data = x.split(":")
+                            if data[0] == reaction.emoji:
+                                reaction_text += f'{data[0]}: {int(data[1])+1}\n'
+                    else:
+                        reaction_text += f'{reaction.emoji}: 1\n'
+                    self.messages[key]['reactions'] = reaction_text
+                    embed = discord.Embed(title=f"{key}のメッセージにリアクションがつきました", description=reaction_text)
+                    embed.add_field(name="content", value=value["content"] if value["content"] else "なし")
+                    for ids in self.channels:
+                        await self.client.get_channel(ids).send(embed=embed)
 
     async def ad(self):
         guild = self.client.get_guild(499345248359809026)
