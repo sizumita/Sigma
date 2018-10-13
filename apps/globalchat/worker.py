@@ -429,7 +429,7 @@ class Worker(BaseWorker):
                     for ids in self.channels:
                         try:
                             await self.client.get_channel(ids).send(embed=embed)
-                        except AttributeError:
+                        except (AttributeError, discord.errors.Forbidden):
                             pass
 
     async def ad(self):
