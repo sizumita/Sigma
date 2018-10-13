@@ -149,7 +149,10 @@ class Worker(BaseWorker):
 
     async def logout(self):
         for channel in self.channels:
-            await self.client.get_channel(channel).send("sigma OS 終了します...")
+            try:
+                await self.client.get_channel(channel).send("sigma OS 終了します...")
+            except:
+                print(5)
         try:
             with open('./datas/global.pickle', mode='wb') as f:
                 pickle.dump(self.data, f)
