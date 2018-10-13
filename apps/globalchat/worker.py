@@ -53,7 +53,7 @@ def create_key():
     three = random.randint(0, 9)
     four = random.randint(0, 9)
     five = random.randint(0, 9)
-    return "{0}/{1}{2}{3}{4}".format(one, two, three, four, five)
+    return "{0}x{1}{2}{3}{4}".format(one.upper(), two, three, four, five)
 
 
 @owner_only
@@ -202,16 +202,14 @@ class Worker(BaseWorker):
                 await message.channel.send(f"ニックネーム:{nick}　で保存されました。")
 
         elif command == "?g":
-            try:
-                num = int(args[0])
-            except ValueError:
-                await message.channel.send("そりゃ数字じゃねーぞ")
-                return False
-            mess = self.messages[num]
-            author = self.client.get_user(mess['user_id'])
+            mess = self.messages[args[0]]
+            author = self.client.get_user(mess['author'])
             guild = self.client.get_guild(mess['guild'])
-            embed = discord.Embed(title=f'ナンバー{num}のメッセージの詳細', description=f'author:{author.name}\n'
-                                                                           f'guild:{guild.name}\nauthor_id:{author.id}')
+            embed = discord.Embed(title=f'{args[0]}のメッセージの詳細',
+                                  description=f'author:{author.name}\n'
+                                              f'guild:{guild.name}\n'
+                                              f'author_id:{author.id}'
+                                  )
             embed.add_field(name="content", value=mess['content'])
             await message.channel.send(embed=embed)
 
@@ -276,7 +274,7 @@ class Worker(BaseWorker):
             await message.channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
             return True
 
-    async def send_webhook(self, guild: discord.Guild, channel: discord.TextChannel, author: discord.Member, content: str, attachments: list, *, is_r18=False, is_ad=False):
+    async def send_webhook(self, guild: discord.Guild, channel: discord.TextChannel, author: discord.Member, content: str, attachments: list, *, is_r18=False, is_ad=False, message=None):
         if author.id in self.nick:
             username = self.nick[author.id]
         else:
@@ -300,24 +298,31 @@ class Worker(BaseWorker):
             # embed.set_footer(text=guild.name, icon_url=guild.icon_url)
             # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
             message_ids = []
+            key = create_key()
             async with aiohttp.ClientSession() as session:
                 for hook_url in self.webhooks:
                     try:
+
                         if self.data[hook_url] == channel.id:
                             continue
                         webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
                         webhook._adapter.store_user = webhook._adapter._store_user
                         webhook_message = await webhook.send(
                                            content,
-                                           username=f'{username} id:{self.num}',
+                                           username=f'{username} at {key}',
                                            avatar_url=author.avatar_url,
                                            embed=embed if embed else None,
                                            wait=True
                         )
                         message_ids.append(webhook_message.id)
-                        self.messages[self.num] = {
+                        self.messages[key] = {
                             "ids": message_ids,
-                            "embed": embed
+                            "embed": embed,
+                            "message": message.id if message else None,
+                            "channel": channel.id,
+                            "guild": guild.id,
+                            "author": author.id,
+                            "content": content
                         }
                     except discord.errors.NotFound:
                         pass
