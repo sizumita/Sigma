@@ -238,8 +238,8 @@ class Worker(BaseWorker):
                 except asyncio.TimeoutError:
                     await message.channel.send("👎")
                     return False
-                if len(mess.content) > 100:
-                    await channel.send("文章は100文字以内でお願いします。")
+                if len(mess.content) > 200:
+                    await channel.send("文章は200文字以内でお願いします。")
                     return -5
                 embed.add_field(name="プレビュー", value=mess.content)
                 embed.add_field(name="これで広告を作成しますか？", value="作成する場合は🆗、やり直す場合は🙅を押してください。")
