@@ -283,6 +283,48 @@ class Worker(BaseWorker):
                 return -1
         if not is_r18:
             content = content.replace("@", "＠")
+            embed = None
+            try:
+                if attachments:
+                    embed = discord.Embed()
+                    embed.set_image(url=attachments[0].url)
+            except:
+                pass
+            if len(content) > 250:
+                await channel.send(f"{author.mention},250文字以上のメッセージは送信できません。")
+                return False
+            # embed.set_author(name=str(author), icon_url=author.avatar_url)
+            # embed.set_footer(text=guild.name, icon_url=guild.icon_url)
+            # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
+            message_ids = []
+            async with aiohttp.ClientSession() as session:
+                for hook_url in self.webhooks:
+                    try:
+                        if self.data[hook_url] == channel.id:
+                            continue
+                        webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
+                        webhook._adapter.store_user = webhook._adapter._store_user
+                        webhook_message = await webhook.send(
+                                           content,
+                                           username=f'{username} id:{self.num}',
+                                           avatar_url=author.avatar_url,
+                                           embed=embed if embed else None,
+                                           wait=True
+                        )
+                        message_ids.append(webhook_message.id)
+                        self.messages[self.num] = {
+                            "ids": message_ids,
+                            "embed": embed
+                        }
+                    except discord.errors.NotFound:
+                        pass
+            if not guild.id in self.speak_data.keys():
+                self.speak_data[guild.id] = 1
+                return True
+            self.speak_data[guild.id] += 1
+            return True
+        else:
+            content = content.replace("@", "＠")
             embed = discord.Embed(description=content)
             try:
                 if attachments:
@@ -304,11 +346,11 @@ class Worker(BaseWorker):
                         webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
                         webhook._adapter.store_user = webhook._adapter._store_user
                         webhook_message = await webhook.send(
-                                           content,
-                                           username=f'{username} id:{self.num}',
-                                           avatar_url=author.avatar_url,
-                                           embed=embed,
-                                           wait=True
+                            content,
+                            username=f'{username} id:{self.num}',
+                            avatar_url=author.avatar_url,
+                            embed=embed,
+                            wait=True
                         )
                         message_ids.append(webhook_message.id)
                         self.messages[self.num] = {
@@ -320,38 +362,6 @@ class Worker(BaseWorker):
                 self.speak_data[guild.id] = 1
                 return True
             self.speak_data[guild.id] += 1
-            return True
-        else:
-            content = content.replace("@", "＠")
-            embed = discord.Embed(title=content)
-            try:
-                if attachments:
-                    embed.set_image(url=attachments[0].url)
-            except:
-                pass
-            embed.set_author(name=str(author), icon_url=author.avatar_url)
-            embed.set_footer(text=guild.name, icon_url=guild.icon_url)
-            # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
-            async with aiohttp.ClientSession() as session:
-                for hook_url in self.webhooks_r18:
-                    try:
-                        if self.data_r18[hook_url] == channel.id:
-                            continue
-                        webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
-                        await webhook.send(
-                            # content + f'\nuserid:{message.author.id}',
-                            username=f'{username} id:{self.num}',
-                            avatar_url=author.avatar_url,
-                            embed=embed)
-                    except discord.errors.NotFound:
-                        pass
-            self.messages_r18[self.num_r18] = {
-                "content": content,
-                "embed": embed.to_dict(),
-                "user_id": author.id,
-                "guild": guild.id,
-            }
-            self.num_r18 += 1
             return True
 
     async def show_speak_data(self, message: discord.Message):

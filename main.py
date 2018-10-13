@@ -76,7 +76,6 @@ class MyClient(discord.Client):
             return
         await client.wait_until_ready()
         global users
-        # print(self.system_ban_id)
         if message.author.id == 212513828641046529:
             if message.content == "sigma rc":
                 await self.rc(message)
@@ -136,7 +135,7 @@ class MyClient(discord.Client):
                                              author_id=message.author.id, guild_id=message.guild.id,
                                              channel_id=message.channel.id, message=message)
                 await self.app_manager.start(message)
-                await self.app_manager.message_on(message)
+            await self.app_manager.message_on(message)
 
         except:
             import traceback
