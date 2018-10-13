@@ -414,8 +414,10 @@ class Worker(BaseWorker):
                     embed = discord.Embed(title=f"{key}のメッセージにリアクションがつきました", description=reaction_text)
                     embed.add_field(name="content", value=value["content"] if value["content"] else "なし")
                     for ids in self.channels:
-                        await self.client.get_channel(ids).send(embed=embed)
-
+                        try:
+                            await self.client.get_channel(ids).send(embed=embed)
+                        except AttributeError:
+                            pass
     async def ad(self):
         guild = self.client.get_guild(499345248359809026)
         channel = self.client.get_channel(499345248359809028)

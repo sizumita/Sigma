@@ -145,5 +145,5 @@ class AppManager(object):
             try:
                 await value.on_reaction_add(reaction, user)
             except AttributeError:
-                raise
+                pass
         return True
