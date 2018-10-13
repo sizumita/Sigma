@@ -124,7 +124,9 @@ class AppManager(object):
             try:
                 await value.member_remove(member)
             except AttributeError:
-                raise
+                import traceback
+                trace = traceback.format_exc()
+                await self.client.get_channel(497046680806621184).send(trace)
 
     async def catch_command(self, message: discord.Message, point):
         for x in self.commands:
@@ -137,7 +139,9 @@ class AppManager(object):
             try:
                 await value.logout()
             except AttributeError:
-                pass
+                import traceback
+                trace = traceback.format_exc()
+                await self.client.get_channel(497046680806621184).send(trace)
         return True
 
     async def reaction_add(self, reaction: discord.Reaction, user: discord.Member):
@@ -145,5 +149,7 @@ class AppManager(object):
             try:
                 await value.on_reaction_add(reaction, user)
             except AttributeError:
-                pass
+                import traceback
+                trace = traceback.format_exc()
+                await self.client.get_channel(497046680806621184).send(trace)
         return True

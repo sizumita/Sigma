@@ -82,17 +82,17 @@ class Worker(BaseWorker):
             async with aiofiles.open('./datas/say.pickle', 'rb') as f:
                 self.say_b_a = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
-            pass
+            print(-1)
         try:
             async with aiofiles.open('./datas/hello.pickle', 'rb') as f:
                 self.hello_channel_ids = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
-            pass
+            print(-1)
         try:
             async with aiofiles.open('./datas/nick.pickle', 'rb') as f:
                 self.hello_channel_ids = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
-            pass
+            print(-1)
 
     @owner_only
     async def get_data(self, message: discord.Message):
@@ -318,10 +318,8 @@ class Worker(BaseWorker):
     async def logout(self):
         with open('./datas/say.pickle', mode='wb') as f:
             pickle.dump(self.say_b_a, f)
-
         with open('./datas/hello.pickle', mode='wb') as f:
             pickle.dump(self.hello_channel_ids, f)
-
         with open('./datas/nick.pickle', mode='wb') as f:
             pickle.dump(self.user_nick, f)
 

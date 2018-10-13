@@ -108,7 +108,7 @@ class MyClient(discord.Client):
                             user = get_user(message.author.id)
                             user.add_point(app)
                         elif type(app) == str:
-                            print(app)
+                            # print(app)
                             if app.startswith("ban "):
                                 user_id = app.split()[1]
                                 self.system_ban_id.append(int(user_id))
@@ -138,10 +138,9 @@ class MyClient(discord.Client):
             await self.app_manager.message_on(message)
 
         except:
-            # import traceback
-            # trace = traceback.format_exc()
-            # await self.get_channel(497046680806621184).send(trace)
-            raise
+            import traceback
+            trace = traceback.format_exc()
+            await self.get_channel(497046680806621184).send(trace)
 
     async def on_member_join(self, member: discord.Member):
         await self.app_manager.member_join(member)
@@ -149,8 +148,9 @@ class MyClient(discord.Client):
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.Member):
         await self.app_manager.reaction_add(reaction, user)
 
-    # async def on_member_remove(self, member: discord.Member):
-    #     await self.app_manager
+    async def on_member_remove(self, member: discord.Member):
+        await self.app_manager.member_remove(member)
+
     async def on_message_delete(self, message: discord.Message):
         if message.channel.id in self.delete_check:
             if message.author.id == self.user.id:

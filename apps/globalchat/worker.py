@@ -49,7 +49,7 @@ tips = [
 
 def get_zero(tuple_list):
     for x in tuple_list:
-        print(tuple_list)
+        # print(tuple_list)
         yield x[0]
 
 
@@ -92,10 +92,11 @@ class Worker(BaseWorker):
         self.data_r18 = {}
         self.speak_data = {}
         self.nick = {}
-        self.ad = {}
+        self.ads = {}
         super().__init__(client)
         client.loop.create_task(self.load())
         client.loop.create_task(self.tips())
+        client.loop.create_task(self.ad())
 
     async def load(self):
         try:
@@ -126,7 +127,7 @@ class Worker(BaseWorker):
             pass
         try:
             async with aiofiles.open('./datas/ad.pickle', mode='rb') as f:
-                self.ad = pickle.loads(await f.read())
+                self.ads = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
             pass
         for channel in self.channels:
@@ -142,7 +143,7 @@ class Worker(BaseWorker):
     async def on_message(self, message: discord.Message):
         if message.channel.id in self.channels:
             # print(self.messages)
-            await self.send_webhook(message.guild, message.channel, message.author, message.content, message.attachments)
+            await self.send_webhook(message.guild, message.channel, message.author, message.content, message.attachments, message=message)
             return True
         if message.channel.id in self.channels_r18:
             await self.send_webhook(message.guild, message.channel, message.author, message.content, message.attachments, is_r18=True, message=message)
@@ -170,7 +171,7 @@ class Worker(BaseWorker):
             with open('./datas/global_nick.pickle', mode='wb') as f:
                 pickle.dump(self.nick, f)
             with open('./datas/ad.pickle', mode='wb') as f:
-                pickle.dump(self.ad, f)
+                pickle.dump(self.ads, f)
         except:
             import traceback
             trace = traceback.format_exc()
@@ -250,11 +251,11 @@ class Worker(BaseWorker):
                 except asyncio.TimeoutError:
                     await m.channel.send('👎')
                     return False
-                if reaction == '🙅':
+                if reaction.emoji == '🙅':
                     await m.channel.send("もう一度最初からやり直してください。")
                     return True
                 await channel.send("全ての設定が完了しました！６回広告が表示されます！")
-                self.ad[message.author.id] = {"content": mess.content, "num": 6}
+                self.ads[message.author.id] = {"content": mess.content.replace("@", "＠"), "count": 6}
                 return -800
 
     async def _connect(self, message: discord.Message, *, is_r18=False):
@@ -305,7 +306,7 @@ class Worker(BaseWorker):
                 return False
             message_ids = []
             if message:
-                message_ids.append(message.id)
+                message_ids.append((message.id, channel.id))
             key = create_key()
             async with aiohttp.ClientSession() as session:
                 for hook_url in self.webhooks:
@@ -331,7 +332,8 @@ class Worker(BaseWorker):
                             "guild": guild.id,
                             "author": author.id,
                             "content": content,
-                            "reactions": ""
+                            "reactions": "",
+                            "reaction_users": {}
                         }
                     except discord.errors.NotFound:
                         pass
@@ -386,12 +388,15 @@ class Worker(BaseWorker):
     async def show_speak_data(self, message: discord.Message):
         data = []
         label = []
+        delete_keys = []
         for key, value in self.speak_data.items():
             try:
                 label.append(self.client.get_guild(key).name)
                 data.append(value)
             except AttributeError:
-                del self.speak_data[key]
+                delete_keys.append(key)
+        for x in delete_keys:
+            del self.speak_data[x]
         pie_chart(data, label, "./datas/graph/speak_data.png")
         file = discord.File("./datas/graph/speak_data.png")
         await message.channel.send("global-chat 使用率のグラフです。", file=file)
@@ -404,10 +409,18 @@ class Worker(BaseWorker):
                     reaction_text = ''
                     if value['reactions']:
                         reactions = value['reactions'].split("\n")
+                        already = False
                         for x in reactions:
                             data = x.split(":")
+                            if data == ['']:
+                                break
                             if data[0] == reaction.emoji:
+                                already = True
                                 reaction_text += f'{data[0]}: {int(data[1])+1}\n'
+                            else:
+                                reaction_text += f'{data[0]}: {int(data[1])}\n'
+                        if not already:
+                            reaction_text += f'{reaction.emoji}: 1\n'
                     else:
                         reaction_text += f'{reaction.emoji}: 1\n'
                     self.messages[key]['reactions'] = reaction_text
@@ -418,13 +431,24 @@ class Worker(BaseWorker):
                             await self.client.get_channel(ids).send(embed=embed)
                         except AttributeError:
                             pass
+
     async def ad(self):
+        await self.client.wait_until_ready()
+        await asyncio.sleep(10)
         guild = self.client.get_guild(499345248359809026)
         channel = self.client.get_channel(499345248359809028)
-        content = ""
         while not self.client.is_closed():
-            pass
-        await self.send_webhook(guild, channel, self.client.user, content, [], is_ad=True)
+            if self.ads:
+                key = random.choice(list(self.ads.keys()))
+                ad = self.ads[key]
+                self.ads[key]["count"] -= 1
+                if self.ads[key]["count"] == 0:
+                    del self.ads[key]
+                author = self.client.get_user(key)
+                content = ad["content"]
+                content = f"**--{author.name}さんのad--**\n{content}"
+                await self.send_webhook(guild, channel, self.client.user, content, [], is_ad=True)
+            await asyncio.sleep(1800)
 
     async def tips(self):
         await self.client.wait_until_ready()
