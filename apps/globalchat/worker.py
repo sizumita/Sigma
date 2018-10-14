@@ -11,7 +11,7 @@ from classes.math.Graph import pie_chart
 import asyncio
 help_message = """
 ```
-global-chat v2.1.2
+global-chat v2.1.3
 
 名前がglobal-chatのチャンネルで発言をすると、自動でコネクトします。
 
