@@ -202,21 +202,22 @@ class Worker(BaseWorker):
                 return False
             author = self.client.get_user(mess['author'])
             guild = self.client.get_guild(mess['guild'])
-            if args[1] == "-del":
-                if message.author.id == mess["author"] or message.author.id == 212513828641046529:
-                    await channel.send(f"id:{args[0]}のメッセージを消去します...")
-                    for x in mess['ids']:
-                        try:
-                            m = await self.client.get_channel(x[1]).get_message(x[0])
-                            await m.delete()
-                        except:
-                            pass
-                    await channel.send(f"id:{args[0]}のメッセージの消去に成功しました。")
-                    del self.messages[args[0]]
-                    return True
-                else:
-                    await channel.send(f"id:{args[0]}のメッセージの消去はメッセージの送信者かownerではないとできません。")
-                    return -5
+            if len(args) >= 2:
+                if args[1] == "-del":
+                    if message.author.id == mess["author"] or message.author.id == 212513828641046529:
+                        await channel.send(f"id:{args[0]}のメッセージを消去します...")
+                        for x in mess['ids']:
+                            try:
+                                m = await self.client.get_channel(x[1]).get_message(x[0])
+                                await m.delete()
+                            except:
+                                pass
+                        await channel.send(f"id:{args[0]}のメッセージの消去に成功しました。")
+                        del self.messages[args[0]]
+                        return True
+                    else:
+                        await channel.send(f"id:{args[0]}のメッセージの消去はメッセージの送信者かownerではないとできません。")
+                        return -5
             embed = discord.Embed(title=f'{args[0]}のメッセージの詳細',
                                   description=f'author:{author.name}\n'
                                               f'guild:{guild.name}\n'
@@ -287,7 +288,7 @@ class Worker(BaseWorker):
             return True
 
     async def send_webhook(self, guild: discord.Guild, channel: discord.TextChannel, author: discord.Member, content: str, attachments: list, *, is_r18=False, is_ad=False, message=None, is_embed=False):
-        if len(self.messages.keys()) > 100:
+        if len(self.messages.keys()) > 150:
             self.messages.clear()
         if author.id in self.nick:
             username = self.nick[author.id]
