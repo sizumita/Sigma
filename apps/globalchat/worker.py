@@ -203,7 +203,10 @@ class Worker(BaseWorker):
                 if message.author.id == mess["author"] or message.author.id == 212513828641046529:
                     await channel.send(f"id:{args[0]}のメッセージを消去します...")
                     for x in mess['ids']:
-                        await self.client.get_channel(x[1]).get_message(x[0]).delete()
+                        try:
+                            await self.client.get_channel(x[1]).get_message(x[0]).delete()
+                        except:
+                            print("error")
                     await channel.send(f"id:{args[0]}のメッセージの消去に成功しました。")
                     del self.messages[args[0]]
                     return True
