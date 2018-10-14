@@ -287,7 +287,7 @@ class Worker(BaseWorker):
             return True
 
     async def send_webhook(self, guild: discord.Guild, channel: discord.TextChannel, author: discord.Member, content: str, attachments: list, *, is_r18=False, is_ad=False, message=None, is_embed=False):
-        if len(self.messages.keys()) > 150:
+        if len(self.messages.keys()) > 100:
             self.messages.clear()
         if author.id in self.nick:
             username = self.nick[author.id]
