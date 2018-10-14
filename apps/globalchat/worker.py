@@ -1,7 +1,7 @@
 import aiofiles
 import random
 from classes.baseworker import BaseWorker
-from classes.decos import owner_only
+# from classes.decos import owner_only
 import pickle
 import re
 import discord
@@ -22,6 +22,10 @@ commands:
 !global sd -> 発言しているサーバーごとの発言数のグラフを表示します。
 
 !global setnick [nick] -> グローバルチャットのニックネームを設定します。
+
+!ad -> ADのメニューを表示します。
+
+?g [message id(例:Ax6777)] [-del] 指定したメッセージの詳細を表示します。-delをつけると書いた本人かすみどらだけが消すことができます。
 
 commands(owner only):
 
@@ -64,22 +68,6 @@ def create_key():
     four = random.randint(0, 9)
     five = random.randint(0, 9)
     return "{0}x{1}{2}{3}{4}".format(one.upper(), two, three, four, five)
-
-
-@owner_only
-async def delete_message(author, delete_text: str, delete_dict: str,  channels: list, client: discord.Client):
-    channel = list(map(lambda x: client.get_channel(x), channels))
-    for ch in channel:
-        try:
-            async for mess in ch.history():
-                if mess.embeds:
-                    if mess.embeds[0].to_dict() == delete_dict:
-                        await mess.delete()
-                else:
-                    if delete_text in mess.content:
-                        await mess.delete()
-        except AttributeError:
-            pass
 
 
 class Worker(BaseWorker):
@@ -188,13 +176,6 @@ class Worker(BaseWorker):
         def check(reaction, user):
             return user == message.author and str(reaction.emoji) in ['🆗', '🙅']
         if command == "!global":
-            if args[0] == "delete":
-                delete_text = self.messages[int(args[1])]['content']
-                delete_dict = self.messages[int(args[1])]['embed']
-                await message.channel.send(delete_text)
-                await message.channel.send(delete_dict)
-                await delete_message(message.author, delete_text, delete_dict, self.channels, self.client)
-                return True
             if args[0] == "all":
                 text = f"{len(self.channels)} channels\n"
                 for x in self.channels:
@@ -214,9 +195,21 @@ class Worker(BaseWorker):
                 await message.channel.send(f"ニックネーム:{nick}　で保存されました。")
 
         elif command == "?g":
+            channel = message.channel
             mess = self.messages[args[0]]
             author = self.client.get_user(mess['author'])
             guild = self.client.get_guild(mess['guild'])
+            if args[1] == "-del":
+                if message.author.id == mess["author"] or message.author.id == 212513828641046529:
+                    await channel.send(f"id:{args[0]}のメッセージを消去します...")
+                    for x in mess['ids']:
+                        await self.client.get_channel(x[1]).get_message(x[0]).delete()
+                    await channel.send(f"id:{args[0]}のメッセージの消去に成功しました。")
+                    del self.messages[args[0]]
+                    return True
+                else:
+                    await channel.send(f"id:{args[0]}のメッセージの消去はメッセージの送信者かownerではないとできません。")
+                    return -5
             embed = discord.Embed(title=f'{args[0]}のメッセージの詳細',
                                   description=f'author:{author.name}\n'
                                               f'guild:{guild.name}\n'
@@ -286,7 +279,7 @@ class Worker(BaseWorker):
             await message.channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
             return True
 
-    async def send_webhook(self, guild: discord.Guild, channel: discord.TextChannel, author: discord.Member, content: str, attachments: list, *, is_r18=False, is_ad=False, message=None):
+    async def send_webhook(self, guild: discord.Guild, channel: discord.TextChannel, author: discord.Member, content: str, attachments: list, *, is_r18=False, is_ad=False, message=None, is_embed=False):
         if len(self.messages.keys()) > 150:
             self.messages.clear()
         if author.id in self.nick:
@@ -315,6 +308,8 @@ class Worker(BaseWorker):
                     if attachments:
                         embed = discord.Embed()
                         embed.set_image(url=attachments[0].url)
+                    if is_embed:
+                        embed.description = content
                 except:
                     pass
             if len(content) > 250:

@@ -15,7 +15,7 @@ class Worker(BaseWorker):
         self.ch = client.get_channel(BAN_CHANNEL)
         self.guilds = {}
         try:
-            with open('./apps/bans/data/settings.pickle', 'rb') as f:
+            with open('./datas/settings.pickle', 'rb') as f:
                 self.guilds = pickle.load(f)
         except (FileNotFoundError, EOFError):
             pass
@@ -119,7 +119,7 @@ class Worker(BaseWorker):
 
     async def logout(self):
         try:
-            with open('./apps/bans/data/settings.pickle', 'wb') as f:
+            with open('./datas/settings.pickle', 'wb') as f:
                 pickle.dump(self.guilds, f)
         except (FileNotFoundError, EOFError):
             pass
