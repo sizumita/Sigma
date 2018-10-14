@@ -204,9 +204,10 @@ class Worker(BaseWorker):
                     await channel.send(f"id:{args[0]}のメッセージを消去します...")
                     for x in mess['ids']:
                         try:
-                            await self.client.get_channel(x[1]).get_message(x[0]).delete()
+                            m = await self.client.get_channel(x[1]).get_message(x[0])
+                            await m.delete()
                         except:
-                            print("error")
+                            pass
                     await channel.send(f"id:{args[0]}のメッセージの消去に成功しました。")
                     del self.messages[args[0]]
                     return True
