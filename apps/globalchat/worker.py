@@ -1,7 +1,6 @@
 import aiofiles
 import random
 from classes.baseworker import BaseWorker
-# from classes.decos import owner_only
 import pickle
 import re
 import discord
@@ -196,7 +195,11 @@ class Worker(BaseWorker):
 
         elif command == "?g":
             channel = message.channel
-            mess = self.messages[args[0]]
+            try:
+                mess = self.messages[args[0]]
+            except KeyError:
+                await channel.send("そのようなidのメッセージはありません。")
+                return False
             author = self.client.get_user(mess['author'])
             guild = self.client.get_guild(mess['guild'])
             if args[1] == "-del":
