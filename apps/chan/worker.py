@@ -77,6 +77,10 @@ class Worker(BaseWorker):
         self.user_nick = {}
         client.loop.create_task(self.load())
 
+    async def join(self, message: discord.Message):
+        await message.channel.send(help_message)
+        return True
+
     async def load(self):
         try:
             async with aiofiles.open('./datas/say.pickle', 'rb') as f:

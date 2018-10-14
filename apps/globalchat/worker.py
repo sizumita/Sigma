@@ -295,12 +295,23 @@ class Worker(BaseWorker):
         if not is_r18:
             content = content.replace("@", "＠")
             embed = None
-            try:
-                if attachments:
-                    embed = discord.Embed()
-                    embed.set_image(url=attachments[0].url)
-            except:
-                pass
+            quote = re.search("-from:([A-Z]x[0-9][0-9][0-9][0-9])", content)
+            if quote:
+                message_id = quote.group(0)
+                mess = self.messages[message_id]
+                author = self.client.get_user(mess['author'])
+                guild = self.client.get_guild(mess['guild'])
+                con = mess['content']
+                embed = discord.Embed(description=con)
+                embed.set_author(name=author.name, icon_url=author.avatar_url)
+                embed.set_footer(text=f"by {guild.name} id:{message_id}")
+            else:
+                try:
+                    if attachments:
+                        embed = discord.Embed()
+                        embed.set_image(url=attachments[0].url)
+                except:
+                    pass
             if len(content) > 250:
                 await channel.send(f"{author.mention},250文字以上のメッセージは送信できません。")
                 return False
