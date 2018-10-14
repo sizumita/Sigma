@@ -348,7 +348,8 @@ class Worker(BaseWorker):
                             "author": author.id,
                             "content": content,
                             "reactions": "",
-                            "reaction_users": {}
+                            "reaction_users": {},
+                            "reaction_messages": {},
                         }
                     except discord.errors.NotFound:
                         pass
@@ -419,11 +420,14 @@ class Worker(BaseWorker):
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.Member):
         # print(reaction.message.channel.id)
         if reaction.message.channel.id in self.channels:
-            for key, value in self.messages.items():
-                if reaction.message.id in list(get_zero(value["ids"])):
+            for value in list(self.messages.items()):
+                if reaction.message.id in list(get_zero(value[1]["ids"])):
+                    if reaction.emoji in value[1]['reaction_users'].keys():
+                        if user.id in value[1]['reaction_users'][reaction.emoji]:
+                            return True
                     reaction_text = ''
-                    if value['reactions']:
-                        reactions = value['reactions'].split("\n")
+                    if value[1]['reactions']:
+                        reactions = value[1]['reactions'].split("\n")
                         already = False
                         for x in reactions:
                             data = x.split(":")
@@ -432,20 +436,38 @@ class Worker(BaseWorker):
                             if data[0] == reaction.emoji:
                                 already = True
                                 reaction_text += f'{data[0]}: {int(data[1])+1}\n'
+                                self.messages[value[0]]["reaction_users"][reaction.emoji].append(user.id)
                             else:
                                 reaction_text += f'{data[0]}: {int(data[1])}\n'
                         if not already:
                             reaction_text += f'{reaction.emoji}: 1\n'
+                            self.messages[value[0]]["reaction_users"][reaction.emoji] = [user.id]
                     else:
                         reaction_text += f'{reaction.emoji}: 1\n'
-                    self.messages[key]['reactions'] = reaction_text
-                    embed = discord.Embed(title=f"{key}のメッセージにリアクションがつきました", description=reaction_text)
-                    embed.add_field(name="content", value=value["content"] if value["content"] else "なし")
-                    for ids in self.channels:
-                        try:
-                            await self.client.get_channel(ids).send(embed=embed)
-                        except (AttributeError, discord.errors.Forbidden):
-                            pass
+                        self.messages[value[0]]["reaction_users"] = {reaction.emoji: [user.id]}
+                    self.messages[value[0]]['reactions'] = reaction_text
+                    embed = discord.Embed(title=f"{value[0]}のメッセージにリアクションがつきました", description=reaction_text)
+                    embed.add_field(name="content", value=value[1]["content"] if value[1]["content"] else "なし")
+                    if value[1]['reaction_messages']:
+                        for ids in self.channels:
+                            try:
+                                channel = self.client.get_channel(ids)
+                                message = await channel.send(embed=embed)
+                                channel_id = value[1]['reaction_messages'][channel.id]
+                                delete_message = await channel.get_message(channel_id)
+                                await delete_message.delete()
+                                self.messages[value[0]]['reaction_messages'][channel.id] = message
+                            except (AttributeError, discord.errors.Forbidden):
+                                pass
+                    else:
+                        for ids in self.channels:
+                            try:
+                                channel = self.client.get_channel(ids)
+                                message = await channel.send(embed=embed)
+                                self.messages[value[0]]['reaction_messages'][channel.id] = message.id
+                            except (AttributeError, discord.errors.Forbidden):
+                                pass
+                    return True
 
     async def ad(self):
         await self.client.wait_until_ready()
