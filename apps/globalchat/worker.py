@@ -303,12 +303,12 @@ class Worker(BaseWorker):
             if quote:
                 message_id = quote.groups()[0]
                 mess = self.messages[message_id]
-                author = self.client.get_user(mess['author'])
-                guild = self.client.get_guild(mess['guild'])
+                _author = self.client.get_user(mess['author'])
+                _guild = self.client.get_guild(mess['guild'])
                 con = mess['content']
                 embed = discord.Embed(description=con)
-                embed.set_author(name=author.name, icon_url=author.avatar_url)
-                embed.set_footer(text=f"by {guild.name} id:{message_id}")
+                embed.set_author(name=author.name, icon_url=_author.avatar_url)
+                embed.set_footer(text=f"by {_guild.name} id:{message_id}")
                 content = content.replace(f"-from:{message_id}", "")
             else:
                 try:
