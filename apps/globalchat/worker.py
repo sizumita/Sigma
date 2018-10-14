@@ -11,7 +11,7 @@ from classes.math.Graph import pie_chart
 import asyncio
 help_message = """
 ```
-global-chat v2.1.0
+global-chat v2.1.1
 
 名前がglobal-chatのチャンネルで発言をすると、自動でコネクトします。
 
@@ -26,6 +26,10 @@ commands:
 commands(owner only):
 
 !global del [id] delete message for id
+
+reference:
+
+global-chatに送信するとき、 -from:[message id(例:Ax6777)] と指定すると、引用することができます。
 ```
 """
 ad_help = """```
@@ -297,7 +301,7 @@ class Worker(BaseWorker):
             embed = None
             quote = re.search("-from:([A-Z]x[0-9][0-9][0-9][0-9])", content)
             if quote:
-                message_id = quote.group(0)
+                message_id = quote.groups()[0]
                 mess = self.messages[message_id]
                 author = self.client.get_user(mess['author'])
                 guild = self.client.get_guild(mess['guild'])
@@ -305,6 +309,7 @@ class Worker(BaseWorker):
                 embed = discord.Embed(description=con)
                 embed.set_author(name=author.name, icon_url=author.avatar_url)
                 embed.set_footer(text=f"by {guild.name} id:{message_id}")
+                content = content.replace(f"-from:{message_id}", "")
             else:
                 try:
                     if attachments:
