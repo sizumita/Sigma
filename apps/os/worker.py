@@ -102,7 +102,7 @@ contract_e.add_field(name="第3条（禁止事項）", value='''
 （12）その他，当チームが不適切と判断する行為
 （13) Discord利用規約に違反する行為
  (14) discordのinviteを投稿する行為
- 第3のkey「m」
+ 第4のkey「m」
 ''', inline=False)
 contract_e.add_field(name="第4条（global chatについて）", value='''
 Global Chatでは、次のことをしてはいけません。
@@ -112,7 +112,7 @@ Global Chatでは、次のことをしてはいけません。
 (4)他人を煽る行為
 (5)運営に対して反逆的な態度をとる行為
 (6)その他、運営が不適切と判断した行為
-第4のkey「a」
+第5のkey「a」
 ''')
 contract_e.add_field(name="第5条（利用制限および登録抹消）", value='''
 当チームは以下の場合等には，事前の通知なく投稿データを削除し，ユーザーに対して本サービスの全部もしくは一部の利用を制限し、またはユーザーとしての登録を抹消することができるものとします。
@@ -121,9 +121,9 @@ contract_e.add_field(name="第5条（利用制限および登録抹消）", valu
 （3）その他，当チームが本サービスの利用を適当でないと判断した場合
 当チームは，当チームの運営行為によりユーザーに生じたいかなる損害についても、一切の責任を免責されるものとします。
 また、ユーザー様同士のトラブルにつきましては、自己責任による当事者同士の解決を基本とし、当チームは一切の責任を免責されるものとします。
-第5のkey「OS」
+第6のkey「OS」
 ''')
-contract_e.add_field(name="Sigmaを使うために", value="`sigma agree [5つのキー]`と入力してください。 ", inline=False)
+contract_e.add_field(name="Sigmaを使うために", value="`sigma agree [6つのキー]`と入力してください。 ", inline=False)
 contract_e.add_field(name="公式サーバー", value="https://discord.gg/fVsAjm9")
 contract_e.add_field(name="BOT招待", value="https://discordapp.com/api/oauth2/"
                                          "authorize?client_id=437917527289364500&permissions=8&scope=bot")

@@ -116,9 +116,10 @@ class MyClient(discord.Client):
                                 user_id = app.split()[1]
                                 self.system_ban_id.remove(int(user_id))
                     return True
-                await self.logger.do_command(command=command, content=message.content,
-                                             author_id=message.author.id, guild_id=message.guild.id,
-                                             channel_id=message.channel.id, message=message)
+                if message.guild:
+                    await self.logger.do_command(command=command, content=message.content,
+                                                 author_id=message.author.id, guild_id=message.guild.id,
+                                                 channel_id=message.channel.id, message=message)
 
             if message.content.startswith("sigma"):
                 if not str(message.author.id) in users.keys():
@@ -131,9 +132,10 @@ class MyClient(discord.Client):
                     if type(app) == str:
                         if app == "apps":
                             await self.app_manager.show_apps(message)
-                await self.logger.do_command(command="sigma", content=message.content,
-                                             author_id=message.author.id, guild_id=message.guild.id,
-                                             channel_id=message.channel.id, message=message)
+                if message.guild:
+                    await self.logger.do_command(command="sigma", content=message.content,
+                                                 author_id=message.author.id, guild_id=message.guild.id,
+                                                 channel_id=message.channel.id, message=message)
                 await self.app_manager.start(message)
             await self.app_manager.message_on(message)
 

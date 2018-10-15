@@ -100,7 +100,7 @@ class AppManager(object):
         else:
             args = ""
         if app in self.continue_app.keys():
-            if not message.author.id in self.agree_users:
+            if not message.author.id in self.agree_users and not message.content == "sigma contract":
                 return await self.request_agree(message)
             try:
                 if args:
