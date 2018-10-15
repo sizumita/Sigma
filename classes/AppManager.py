@@ -160,7 +160,7 @@ class AppManager(object):
 
     async def logout(self):
         with open("./datas/agree.txt", "w") as f:
-            f.write("\n".join(self.agree_users))
+            f.write("\n".join([str(i) for i in self.agree_users]))
         for key, value in self.continue_app.items():
             try:
                 await value.logout()
