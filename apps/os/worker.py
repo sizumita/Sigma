@@ -247,6 +247,10 @@ class Worker(BaseWorker):
                 embed.add_field(name="ポイント入金（未実装）", value="実装まで今しばらくお待ちください。")
                 await message.channel.send(embed=embed)
                 return True
+            if args[0] == "link":
+                await message.author.send("https://discordapp.com/api/oauth2/authorize?"
+                                          "client_id=437917527289364500&permissions=8&scope=bot")
+                return True
         if command == "!os":
             if args[0] == "com_logs":
                 await command_graph(message.author, message)

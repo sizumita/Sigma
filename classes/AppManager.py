@@ -17,6 +17,7 @@ class AppManager(object):
         self.continue_app = {}
         self.commands = []
         self._commands = {}
+        self.app_data = {}
 
     async def set_up(self):
         self.app_list = [file for file in os.listdir(app_path) if os.path.isdir(app_path + file)]
