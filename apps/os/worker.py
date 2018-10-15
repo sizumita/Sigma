@@ -80,11 +80,13 @@ Sigma:~ {user.name}$
 """
 contract_e = discord.Embed(title="すみどらちゃん|Sigma 利用規約", description="すみどらちゃん|Sigmaは、Discordのさらなる発展を目指してシステムです。\n"
                                                                    "このシステムでは、サーバーの規定は反映されず、\n下記の利用規約が適応されます。", inline=False)
-contract_e.add_field(name="本規約について", value='この利用規約（以下，「本規約」といいます。）は，すみどらちゃんコミュニティチーム（以下，「当チーム」といいます。）\n'
+contract_e.add_field(name="本規約について", value='この利用規約（以下，「本規約」といいます。）は，すみどらちゃんコミュニティチーム（以下，「当チーム」といいます。）第1のkey「S」\n'
                                            'が提供するサービス"すみどらちゃん|Sigma"(以下，「本サービス」といいます。）の利用条件を定めるものです。\n'
                                            '利用ユーザーの皆さま（以下，「ユーザー」といいます。）には，本規約に従い本サービスをご利用いただきます。', inline=False)
-contract_e.add_field(name="第1条（適用）", value="本規約は，ユーザーと当チームとの間の本サービスの利用に関わる一切の関係に適用されるものとします。", inline=False)
-contract_e.add_field(name="第2条（禁止事項）", value='''
+contract_e.add_field(name="第1条（適用）", value="本規約は，ユーザーと当チームとの間の本サービスの利用に関わる一切の関係に適用されるものとします。第2のkey「i」", inline=False)
+contract_e.add_field(name="第2条（権限について）", value="""Sigma|すみどらちゃん 開発者のすみどら#8923 (id:212513828641046529)は、
+本サービスの全ての権限を保有します。第3のkey「g」""", inline=False)
+contract_e.add_field(name="第3条（禁止事項）", value='''
 ユーザーは，本サービスの利用にあたり，以下の行為をしてはなりません。
 （1）法令または公序良俗に違反する行為
 （2）犯罪行為に関連する行為
@@ -100,15 +102,31 @@ contract_e.add_field(name="第2条（禁止事項）", value='''
 （12）その他，当チームが不適切と判断する行為
 （13) Discord利用規約に違反する行為
  (14) discordのinviteを投稿する行為
+ 第3のkey「m」
 ''', inline=False)
-contract_e.add_field(name="第3条（利用制限および登録抹消）", value='''
+contract_e.add_field(name="第4条（global chatについて）", value='''
+Global Chatでは、次のことをしてはいけません。
+(1)r18発言をする行為
+(2)淫夢発言をする行為（詳しい人しか分らないものは承認）
+(3)r18,r18g,淫夢画像を投稿する行為
+(4)他人を煽る行為
+(5)運営に対して反逆的な態度をとる行為
+(6)その他、運営が不適切と判断した行為
+第4のkey「a」
+''')
+contract_e.add_field(name="第5条（利用制限および登録抹消）", value='''
 当チームは以下の場合等には，事前の通知なく投稿データを削除し，ユーザーに対して本サービスの全部もしくは一部の利用を制限し、またはユーザーとしての登録を抹消することができるものとします。
 （1）本規約のいずれかの条項に違反した場合
 （2）当チームからの問い合わせその他の回答を求める連絡に対して7日間以上応答がない場合
 （3）その他，当チームが本サービスの利用を適当でないと判断した場合
 当チームは，当チームの運営行為によりユーザーに生じたいかなる損害についても、一切の責任を免責されるものとします。
 また、ユーザー様同士のトラブルにつきましては、自己責任による当事者同士の解決を基本とし、当チームは一切の責任を免責されるものとします。
+第5のkey「OS」
 ''')
+contract_e.add_field(name="Sigmaを使うために", value="`sigma agree [5つのキー]`と入力してください。 ", inline=False)
+contract_e.add_field(name="公式サーバー", value="https://discord.gg/fVsAjm9")
+contract_e.add_field(name="BOT招待", value="https://discordapp.com/api/oauth2/"
+                                         "authorize?client_id=437917527289364500&permissions=8&scope=bot")
 point_menu = """
 
 """

@@ -18,6 +18,7 @@ class AppManager(object):
         self.commands = []
         self._commands = {}
         self.app_data = {}
+        self.agree_users = []
 
     async def set_up(self):
         self.app_list = [file for file in os.listdir(app_path) if os.path.isdir(app_path + file)]
@@ -33,6 +34,24 @@ class AppManager(object):
             self.commands += data["commands"]
             for x in data["commands"]:
                 self._commands[x] = app_name
+
+        try:
+            with open("./datas/agree.txt", "r") as f:
+                self.agree_users = f.read().split("\n")
+        except FileNotFoundError:
+            pass
+
+    async def request_agree(self, message: discord.Message):
+        embed = discord.Embed(description="`sigma agree [コード]` を入力して、使用可能にしてください。\n"
+                                          "コードは`sigma contract`を実行し、散らばっているコードを見つけ、"
+                                          "`sigma agree [コード]`と入力してください。")
+        await message.author.send(embed=embed)
+        return True
+
+    async def agree(self, message: discord.Message):
+        await message.author.send("利用規約承認を確認しました。\nSigma を使用することができるようになりました。\n`sigma`でご利用ください。")
+        self.agree_users.append(message.author.id)
+        return True
 
     async def show_apps(self, message: discord.Message):
         content = message.content
@@ -74,11 +93,15 @@ class AppManager(object):
         await instance.join(message)
 
     async def command(self, message: discord.Message, command: str, app: str, point: int):
+        if message.content == "sigma agree SigmaOS":
+            return await self.agree(message)
         if not message.content == command:
             args = re.sub("[{}]".format(command), "", message.content, len(command))
         else:
             args = ""
         if app in self.continue_app.keys():
+            if not message.author.id in self.agree_users:
+                return await self.request_agree(message)
             try:
                 if args:
                     if args.split()[0] == "help":
@@ -136,6 +159,8 @@ class AppManager(object):
         return [False, False]
 
     async def logout(self):
+        with open("./datas/agree.txt", "w") as f:
+            f.write("\n".join(self.agree_users))
         for key, value in self.continue_app.items():
             try:
                 await value.logout()
