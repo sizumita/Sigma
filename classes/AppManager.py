@@ -49,6 +49,8 @@ class AppManager(object):
         return True
 
     async def agree(self, message: discord.Message):
+        if message.guild:
+            await message.delete()
         await message.author.send("利用規約承認を確認しました。\nSigma を使用することができるようになりました。\n`sigma`でご利用ください。")
         self.agree_users.append(message.author.id)
         return True

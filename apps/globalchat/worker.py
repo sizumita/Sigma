@@ -50,7 +50,10 @@ tips = [
     "`!fse`で、FlickrAPIで、画像を検索することができます。",
     "`!timer`で、タイマーを起動することができます。",
     "`!global all`で、全てのglobal chatにコネクトしているチャンネルを見ることができます。",
-    "Sigmaの公式サーバーはこちら -> https://discord.gg/fVsAjm9"
+    "Sigmaの公式サーバーはこちら -> https://discord.gg/fVsAjm9",
+    "`sigma link`でSigma|すみどらちゃんの招待を受け取れます。",
+    "Global Chat, Sigmaのコマンド類を利用するには、利用規約への同意が必要です。`sigma contract`で確認してください。",
+    "Global Chatに、広告を載せたい場合は、`!ad`で。",
 ]
 
 
@@ -364,45 +367,68 @@ class Worker(BaseWorker):
             return True
         else:
             content = content.replace("@", "＠")
-            embed = discord.Embed(description=content)
-            try:
-                if attachments:
-                    embed.set_image(url=attachments[0].url)
-            except:
-                pass
+            embed = None
+            quote = re.search("-from:([A-Z]x[0-9][0-9][0-9][0-9])", content)
+            if quote:
+                message_id = quote.groups()[0]
+                mess = self.messages[message_id]
+                _author = self.client.get_user(mess['author'])
+                _guild = self.client.get_guild(mess['guild'])
+                con = mess['content']
+                embed = discord.Embed(description=con)
+                embed.set_author(name=author.name, icon_url=_author.avatar_url)
+                embed.set_footer(text=f"by {_guild.name} id:{message_id}")
+                content = content.replace(f"-from:{message_id}", "")
+            else:
+                try:
+                    if attachments:
+                        embed = discord.Embed()
+                        embed.set_image(url=attachments[0].url)
+                    if is_embed:
+                        embed.description = content
+                except:
+                    pass
             if len(content) > 250:
                 await channel.send(f"{author.mention},250文字以上のメッセージは送信できません。")
                 return False
-            embed.set_author(name=str(author), icon_url=author.avatar_url)
-            embed.set_footer(text=guild.name, icon_url=guild.icon_url)
-            # embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
             message_ids = []
             if message:
-                message_ids.append(message.id)
+                message_ids.append((message.id, channel.id))
+            key = create_key()
             async with aiohttp.ClientSession() as session:
-                for hook_url in self.webhooks:
+                for hook_url in self.webhooks_r18:
                     try:
-                        if self.data[hook_url] == channel.id:
+
+                        if self.data_r18[hook_url] == channel.id:
                             continue
                         webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
                         webhook._adapter.store_user = webhook._adapter._store_user
                         webhook_message = await webhook.send(
                             content,
-                            username=f'{username} id:{self.num}',
+                            username=f'{username} at {key}',
                             avatar_url=author.avatar_url,
-                            embed=embed,
+                            embed=embed if embed else None,
                             wait=True
                         )
-                        message_ids.append((webhook_message.id, webhook_message.channel.id))
-                        self.messages[self.num] = {
+                        message_ids.append((webhook_message.id, self.data[hook_url]))
+                        self.messages_r18[key] = {
                             "ids": message_ids,
+                            "embed": embed,
+                            "message": message.id if message else None,
+                            "channel": channel.id,
+                            "guild": guild.id,
+                            "author": author.id,
+                            "content": content,
+                            "reactions": "",
+                            "reaction_users": {},
+                            "reaction_messages": {},
                         }
                     except discord.errors.NotFound:
                         pass
-            if not guild.id in self.speak_data.keys():
-                self.speak_data[guild.id] = 1
+            if not guild.id in self.speak_data_r18.keys():
+                self.speak_data_r18[guild.id] = 1
                 return True
-            self.speak_data[guild.id] += 1
+            self.speak_data_r18[guild.id] += 1
             return True
 
     async def show_speak_data(self, message: discord.Message):

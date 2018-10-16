@@ -4,6 +4,8 @@ test.py
 *.pickle
 *.csv
 *.png
+classes/TextGenerator/chain.db
+
 .DS_Store
 .text
 datas/
