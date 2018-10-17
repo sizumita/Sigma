@@ -7,7 +7,6 @@
 import unittest
 
 import re
-import MeCab
 import sqlite3
 from collections import defaultdict
 from janome.tokenizer import Tokenizer
