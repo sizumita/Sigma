@@ -255,7 +255,7 @@ class Worker(BaseWorker):
         content = message.clean_content
         chain = PrepareChain(content)
         triplet_freqs = chain.make_triplet_freqs()
-        chain.save(triplet_freqs, True)
+        chain.save(triplet_freqs)
         generator = GenerateText(n=1)
         content = generator.generate()
         await message.channel.send(content)
