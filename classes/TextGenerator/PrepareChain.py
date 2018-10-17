@@ -31,7 +31,8 @@ class PrepareChain(object):
         self.text = text
 
         # 形態素解析用タガー
-        self.t = Tokenizer()
+        self.dic_url = "./apps/chan/data/userdic.csv"
+        self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
 
     def make_triplet_freqs(self):
         u"""
