@@ -135,6 +135,8 @@ class Worker(BaseWorker):
         return True
 
     async def on_message(self, message: discord.Message):
+        if message.channel == discord.DMChannel:
+            return
         if message.channel.id in self.channels:
             # print(self.messages)
             await self.send_webhook(message.guild, message.channel, message.author, message.content, message.attachments, message=message)

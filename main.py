@@ -137,6 +137,7 @@ class MyClient(discord.Client):
                                                  author_id=message.author.id, guild_id=message.guild.id,
                                                  channel_id=message.channel.id, message=message)
                 await self.app_manager.start(message)
+                return True
             await self.app_manager.message_on(message)
 
         except:

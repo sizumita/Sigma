@@ -23,17 +23,22 @@ class AppManager(object):
     async def set_up(self):
         self.app_list = [file for file in os.listdir(app_path) if os.path.isdir(app_path + file)]
         for app_name in self.app_list:
-            a_path = app_path + app_name + "/data/config.yml"
-            with open(a_path, 'r') as f:
-                data = yaml.load(f)
-            if data["continue"]:
-                loader = machinery.SourceFileLoader(app_name, app_path + app_name + '/worker.py')
-                app_module = loader.load_module()
-                instance = app_module.Worker(self.client)
-                self.continue_app[app_name] = instance
-            self.commands += data["commands"]
-            for x in data["commands"]:
-                self._commands[x] = app_name
+            try:
+                a_path = app_path + app_name + "/data/config.yml"
+                with open(a_path, 'r') as f:
+                    data = yaml.load(f)
+                if data["continue"]:
+                    loader = machinery.SourceFileLoader(app_name, app_path + app_name + '/worker.py')
+                    app_module = loader.load_module()
+                    instance = app_module.Worker(self.client)
+                    self.continue_app[app_name] = instance
+                self.commands += data["commands"]
+                for x in data["commands"]:
+                    self._commands[x] = app_name
+            except:
+                import traceback
+                trace = traceback.format_exc()
+                await self.client.get_channel(497046680806621184).send(trace)
 
         try:
             with open("./datas/agree.txt", "r") as f:
