@@ -89,7 +89,7 @@ class GenerateText(object):
                 if key in result:
                     return result
 
-        return None
+        return result
 
     def _get_chain_from_DB(self, con, prefixes):
         u"""
