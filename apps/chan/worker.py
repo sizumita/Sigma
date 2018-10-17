@@ -261,8 +261,8 @@ class Worker(BaseWorker):
         await message.channel.send(content)
 
     async def on_message(self, message: discord.Message):
-        if message.channel.id == 501902669695418368:
-        # if message.channel.id == 501904504485183489:
+        # if message.channel.id == 501902669695418368:
+        if message.channel.id == 501904504485183489:
             self.client.loop.create_task(self.dialogue(message))
             return True
 

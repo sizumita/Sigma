@@ -133,12 +133,12 @@ class PrepareChain(object):
                 schema = f.read()
                 con.executescript(schema)
 
-            # データ整形
-            datas = [(triplet[0], triplet[1], triplet[2], freq) for (triplet, freq) in triplet_freqs.items()]
+        # データ整形
+        datas = [(triplet[0], triplet[1], triplet[2], freq) for (triplet, freq) in triplet_freqs.items()]
 
-            # データ挿入
-            p_statement = u"insert into chain_freqs (prefix1, prefix2, suffix, freq) values (?, ?, ?, ?)"
-            con.executemany(p_statement, datas)
+        # データ挿入
+        p_statement = "insert into chain_freqs (prefix1, prefix2, suffix, freq) values (?, ?, ?, ?)"
+        con.executemany(p_statement, datas)
 
         # コミットしてクローズ
         con.commit()
@@ -255,7 +255,7 @@ if __name__ == '__main__':
 　見わたすと、その檸檬の色彩はガチャガチャした色の階調をひっそりと紡錘形の身体の中へ吸収してしまって、カーンと冴えかえっていた。私は埃っぽい丸善の中の空気が、その檸檬の周囲だけ変に緊張しているような気がした。私はしばらくそれを眺めていた。
 　不意に第二のアイディアが起こった。その奇妙なたくらみはむしろ私をぎょっとさせた。
 　――それをそのままにしておいて私は、なに喰くわぬ顔をして外へ出る。――
-　私は変にくすぐったい気持がした。「出て行こうかなあ。そうだ出て行こう」そして私はすたすた出て行った。
+　私は変にくすぐったい気持がした。「出て行こうかなあ。そうだ出て行こう」そして私はすたすた出て行った。 
 　変にくすぐったい気持が街の上の私を微笑ませた。丸善の棚へ黄金色に輝く恐ろしい爆弾を仕掛けて来た奇怪な悪漢が私で、もう十分後にはあの丸善が美術の棚を中心として大爆発をするのだったらどんなにおもしろいだろう。
 　私はこの想像を熱心に追求した。「そうしたらあの気詰まりな丸善も粉葉みじんだろう」
 　そして私は活動写真の看板画が奇体な趣きで街を彩っている京極を下って行った。"""

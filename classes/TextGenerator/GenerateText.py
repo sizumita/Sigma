@@ -113,6 +113,7 @@ class GenerateText(object):
 
         # チェーン情報を取得
         chains = self._get_chain_from_DB(con, prefixes)
+        # print(chains)
 
         # 取得したチェーンから、確率的に1つ選ぶ
         triplet = self._get_probable_triplet(chains)
