@@ -81,7 +81,10 @@ class GenerateText(object):
         """
         result = ""
         data = self.t.tokenize(content)
-        keys = [i.surface for i in data if True in [True for t in ["動詞", "名詞", "形容動詞", "形容詞"] if t in i.part_of_speech.split(",")][0]]
+        try:
+            keys = [i.surface for i in data if [t for t in ["動詞", "名詞", "形容動詞", "形容詞"] if t in i.part_of_speech.split(",")][0]]
+        except IndexError:
+            keys = [i.surface for i in data]
         for x in range(50):
             morphemes = self.generate_index(con)
             # 連結
