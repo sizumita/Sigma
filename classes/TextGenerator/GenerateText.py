@@ -7,9 +7,10 @@ u"""
 import os.path
 import sqlite3
 import random
+from janome.tokenizer import Tokenizer
 
 if __name__ == '__main__':
-    from PrepareChain import PrepareChain
+    from .PrepareChain import PrepareChain
 else:
     from classes.TextGenerator.PrepareChain import PrepareChain
 
@@ -25,8 +26,10 @@ class GenerateText(object):
         @param n いくつの文章を生成するか
         """
         self.n = n
+        self.dic_url = "./apps/chan/data/userdic.csv"
+        self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
 
-    def generate(self):
+    def generate(self, content):
         u"""
         実際に生成する
         @return 生成された文章
@@ -44,7 +47,7 @@ class GenerateText(object):
 
         # 指定の数だけ作成する
         for i in range(self.n):
-            text = self._generate_sentence(con)
+            text = self._generate_sentence(con, content)
             generated_text += text
 
         # DBクローズ
@@ -52,12 +55,7 @@ class GenerateText(object):
 
         return generated_text
 
-    def _generate_sentence(self, con):
-        u"""
-        ランダムに一文を生成する
-        @param con DBコネクション
-        @return 生成された1つの文章
-        """
+    def generate_index(self, con):
         # 生成文章のリスト
         morphemes = []
 
@@ -73,10 +71,25 @@ class GenerateText(object):
             triplet = self._get_triplet(con, prefix1, prefix2)
             morphemes.append(triplet[2])
 
-        # 連結
-        result = "".join([i for i in morphemes[:-1]])
+        return morphemes
 
-        return result
+    def _generate_sentence(self, con, content):
+        u"""
+        ランダムに一文を生成する
+        @param con DBコネクション
+        @return 生成された1つの文章
+        """
+
+        keys = self.t.tokenize(content, wakati=True)
+        for x in range(50):
+            morphemes = self.generate_index(con)
+            # 連結
+            result = "".join([i for i in morphemes[:-1]])
+            for key in keys:
+                if key in result:
+                    return result
+
+        return None
 
     def _get_chain_from_DB(self, con, prefixes):
         u"""
@@ -162,7 +175,7 @@ class GenerateText(object):
 
 if __name__ == '__main__':
     generator = GenerateText()
-    print(generator.generate())
+    print(generator.generate("a"))
 
 
 

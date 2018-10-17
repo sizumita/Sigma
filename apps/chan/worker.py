@@ -57,6 +57,12 @@ hello = [
     "ここに伝説の剣士、{user.name}さんがいる！",
 ]
 what_do_say = re.compile(r"^(.+)(って|と)(言ったら|いったら)(.+)(って|と)(言って|いって).*$")
+cannnot_words = [
+    "卍",
+    "ナチス",
+    "ヒトラー",
+    "ww"
+]
 
 
 async def omikuzi(message: discord.Message):
@@ -253,12 +259,19 @@ class Worker(BaseWorker):
 
     async def dialogue(self, message: discord.Message):
         content = message.clean_content
+
+        if message.channel.is_nsfw():
+            return
+        for x in cannnot_words:
+            if x in message.content:
+                return
         chain = PrepareChain(content)
         triplet_freqs = chain.make_triplet_freqs()
         chain.save(triplet_freqs)
         generator = GenerateText(n=1)
-        content = generator.generate()
-        await message.channel.send(content)
+        content = generator.generate(message.content)
+        if content:
+            await message.channel.send(content)
 
     async def on_message(self, message: discord.Message):
         if message.channel.id in [501902669695418368, 501927723627970560, 501904504485183489, 501974208319062026]:

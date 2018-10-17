@@ -83,13 +83,8 @@ class PrepareChain(object):
         @param sentence 一文
         @return 形態素で分割された配列
         """
-        morphemes = []
-        nodes = self.t.tokenize(sentence)
-        for node in nodes:
-            morpheme = node.surface
-            morphemes.append(morpheme)
 
-        return morphemes
+        return self.t.tokenize(sentence, wakati=True)
 
     def _make_triplet(self, morphemes):
         u"""
