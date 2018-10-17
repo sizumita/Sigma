@@ -8,6 +8,8 @@ import asyncio
 import pickle
 import random
 import aiofiles
+from classes.TextGenerator.PrepareChain import PrepareChain
+from classes.TextGenerator.GenerateText import GenerateText
 owner = None
 help_message = """
 ```
@@ -249,7 +251,20 @@ class Worker(BaseWorker):
             await self.get_data(message)
             return True
 
+    async def dialogue(self, message: discord.Message):
+        content = message.clean_content
+        chain = PrepareChain(content)
+        triplet_freqs = chain.make_triplet_freqs()
+        chain.save(triplet_freqs, True)
+        generator = GenerateText(n=1)
+        content = generator.generate()
+        await message.channel.send(content)
+
     async def on_message(self, message: discord.Message):
+        if message.channel.id == 501902669695418368:
+        # if message.channel.id == 501904504485183489:
+            self.client.loop.create_task(self.dialogue(message))
+            return True
 
         def pred(m):
             return m.author == message.author and m.channel == message.channel
@@ -306,6 +321,8 @@ class Worker(BaseWorker):
                 return True
             await send_waiting()
         try:
+            if not message.guild:
+                return
             if message.content in self.say_b_a[message.guild.id]:
                 await message.channel.send(self.say_b_a[message.guild.id][message.content])
         except KeyError:

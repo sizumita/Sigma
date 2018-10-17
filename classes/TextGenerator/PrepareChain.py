@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-u"""
+"""
 与えられた文書からマルコフ連鎖のためのチェーン（連鎖）を作成して、DBに保存するファイル
 """
 
@@ -10,6 +10,7 @@ import re
 import MeCab
 import sqlite3
 from collections import defaultdict
+from janome.tokenizer import Tokenizer
 
 
 class PrepareChain(object):
@@ -17,11 +18,11 @@ class PrepareChain(object):
     チェーンを作成してDBに保存するクラス
     """
 
-    BEGIN = u"__BEGIN_SENTENCE__"
-    END = u"__END_SENTENCE__"
+    BEGIN = "__BEGIN_SENTENCE__"
+    END = "__END_SENTENCE__"
 
     DB_PATH = "chain.db"
-    DB_SCHEMA_PATH = "schema.sql"
+    DB_SCHEMA_PATH = "./classes/TextGenerator/schema.sql"
 
     def __init__(self, text):
         u"""
@@ -31,7 +32,7 @@ class PrepareChain(object):
         self.text = text
 
         # 形態素解析用タガー
-        self.tagger = MeCab.Tagger('-Ochasen')
+        self.t = Tokenizer()
 
     def make_triplet_freqs(self):
         u"""
@@ -63,7 +64,7 @@ class PrepareChain(object):
         @return 一文ずつの配列
         """
         # 改行文字以外の分割文字（正規表現表記）
-        delimiter = u"。|．|\."
+        delimiter = "。|．|\."
 
         # 全ての分割文字を改行文字に置換（splitしたときに「。」などの情報を無くさないため）
         text = re.sub(r"({0})".format(delimiter), r"\1\n", text)
@@ -83,12 +84,11 @@ class PrepareChain(object):
         @return 形態素で分割された配列
         """
         morphemes = []
-        node = self.tagger.parseToNode(sentence)
-        while node:
-            if node.posid != 0:
-                morpheme = node.surface.encode("utf-8")
-                morphemes.append(morpheme)
-            node = node.next
+        nodes = self.t.tokenize(sentence)
+        for node in nodes:
+            morpheme = node.surface
+            morphemes.append(morpheme)
+
         return morphemes
 
     def _make_triplet(self, morphemes):
@@ -155,7 +155,7 @@ class PrepareChain(object):
 
 
 class TestFunctions(unittest.TestCase):
-    u"""
+    """
     テスト用クラス
     """
 
@@ -163,7 +163,7 @@ class TestFunctions(unittest.TestCase):
         u"""
         テストが実行される前に実行される
         """
-        self.text = u"こんにちは。　今日は、楽しい運動会です。hello world.我輩は猫である\n  名前はまだない。我輩は犬である\r\n名前は決まってるよ"
+        self.text = "こんにちは。　今日は、楽しい運動会です。hello world.我輩は猫である\n  名前はまだない。我輩は犬である\r\n名前は決まってるよ"
         self.chain = PrepareChain(self.text)
 
     def test_make_triplet_freqs(self):
@@ -171,7 +171,7 @@ class TestFunctions(unittest.TestCase):
         全体のテスト
         """
         triplet_freqs = self.chain.make_triplet_freqs()
-        answer = {(u"__BEGIN_SENTENCE__", u"今日", u"は"): 1, (u"今日", u"は", u"、"): 1, (u"は", u"、", u"楽しい"): 1, (u"、", u"楽しい", u"運動会"): 1, (u"楽しい", u"運動会", u"です"): 1, (u"運動会", u"です", u"。"): 1, (u"です", u"。", u"__END_SENTENCE__"): 1, (u"__BEGIN_SENTENCE__", u"hello", u"world"): 1, (u"hello", u"world", u"."): 1, (u"world", u".", u"__END_SENTENCE__"): 1, (u"__BEGIN_SENTENCE__", u"我輩", u"は"): 2, (u"我輩", u"は", u"猫"): 1, (u"は", u"猫", u"で"): 1, (u"猫", u"で", u"ある"): 1, (u"で", u"ある", u"__END_SENTENCE__"): 2, (u"__BEGIN_SENTENCE__", u"名前", u"は"): 2, (u"名前", u"は", u"まだ"): 1, (u"は", u"まだ", u"ない"): 1, (u"まだ", u"ない", u"。"): 1, (u"ない", u"。", u"__END_SENTENCE__"): 1, (u"我輩", u"は", u"犬"): 1, (u"は", u"犬", u"で"): 1, (u"犬", u"で", u"ある"): 1, (u"名前", u"は", u"決まっ"): 1, (u"は", u"決まっ", u"てる"): 1, (u"決まっ", u"てる", u"よ"): 1, (u"てる", u"よ", u"__END_SENTENCE__"): 1}
+        answer = {("__BEGIN_SENTENCE__", "今日", "は"): 1, ("今日", "は", "、"): 1, ("は", "、", "楽しい"): 1, ("、", "楽しい", "運動会"): 1, ("楽しい", "運動会", "です"): 1, ("運動会", u"です", u"。"): 1, (u"です", u"。", u"__END_SENTENCE__"): 1, (u"__BEGIN_SENTENCE__", u"hello", u"world"): 1, (u"hello", u"world", u"."): 1, (u"world", u".", u"__END_SENTENCE__"): 1, (u"__BEGIN_SENTENCE__", u"我輩", u"は"): 2, (u"我輩", u"は", u"猫"): 1, (u"は", u"猫", u"で"): 1, (u"猫", u"で", u"ある"): 1, (u"で", u"ある", u"__END_SENTENCE__"): 2, (u"__BEGIN_SENTENCE__", u"名前", u"は"): 2, (u"名前", u"は", u"まだ"): 1, (u"は", u"まだ", u"ない"): 1, (u"まだ", u"ない", u"。"): 1, (u"ない", u"。", u"__END_SENTENCE__"): 1, (u"我輩", u"は", u"犬"): 1, (u"は", u"犬", u"で"): 1, (u"犬", u"で", u"ある"): 1, (u"名前", u"は", u"決まっ"): 1, (u"は", u"決まっ", u"てる"): 1, (u"決まっ", u"てる", u"よ"): 1, (u"てる", u"よ", u"__END_SENTENCE__"): 1}
         self.assertEqual(triplet_freqs, answer)
 
     def test_divide(self):
@@ -201,7 +201,7 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(triplet_freqs, answer)
 
     def test_make_triplet_too_short(self):
-        u"""
+        """
         形態素毎に3つ組にしてその出現回数を数えるテスト
         ただし、形態素が少なすぎる場合
         """
@@ -221,7 +221,7 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(triplet_freqs, answer)
 
     def tearDown(self):
-        u"""
+        """
         テストが実行された後に実行される
         """
         pass
@@ -231,7 +231,7 @@ if __name__ == '__main__':
     # unittest.main()
 
     # 『檸檬』梶井基次郎
-    text = u"""えたいの知れない不吉な塊が私の心を始終圧えつけていた。焦躁と言おうか、嫌悪と言おうか――酒を飲んだあとに宿酔があるように、酒を毎日飲んでいると宿酔に相当した時期がやって来る。それが来たのだ。これはちょっといけなかった。結果した肺尖カタルや神経衰弱がいけないのではない。また背を焼くような借金などがいけないのではない。いけないのはその不吉な塊だ。以前私を喜ばせたどんな美しい音楽も、どんな美しい詩の一節も辛抱がならなくなった。蓄音器を聴かせてもらいにわざわざ出かけて行っても、最初の二三小節で不意に立ち上がってしまいたくなる。何かが私を居堪らずさせるのだ。それで始終私は街から街を浮浪し続けていた。
+    text = """えたいの知れない不吉な塊が私の心を始終圧えつけていた。焦躁と言おうか、嫌悪と言おうか――酒を飲んだあとに宿酔があるように、酒を毎日飲んでいると宿酔に相当した時期がやって来る。それが来たのだ。これはちょっといけなかった。結果した肺尖カタルや神経衰弱がいけないのではない。また背を焼くような借金などがいけないのではない。いけないのはその不吉な塊だ。以前私を喜ばせたどんな美しい音楽も、どんな美しい詩の一節も辛抱がならなくなった。蓄音器を聴かせてもらいにわざわざ出かけて行っても、最初の二三小節で不意に立ち上がってしまいたくなる。何かが私を居堪らずさせるのだ。それで始終私は街から街を浮浪し続けていた。
 　何故だかその頃私は見すぼらしくて美しいものに強くひきつけられたのを覚えている。風景にしても壊れかかった街だとか、その街にしてもよそよそしい表通りよりもどこか親しみのある、汚い洗濯物が干してあったりがらくたが転がしてあったりむさくるしい部屋が覗いていたりする裏通りが好きであった。雨や風が蝕んでやがて土に帰ってしまう、と言ったような趣きのある街で、土塀が崩れていたり家並が傾きかかっていたり――勢いのいいのは植物だけで、時とするとびっくりさせるような向日葵があったりカンナが咲いていたりする。
 　時どき私はそんな路を歩きながら、ふと、そこが京都ではなくて京都から何百里も離れた仙台とか長崎とか――そのような市へ今自分が来ているのだ――という錯覚を起こそうと努める。私は、できることなら京都から逃げ出して誰一人知らないような市へ行ってしまいたかった。第一に安静。がらんとした旅館の一室。清浄な蒲団。匂いのいい蚊帳と糊のよくきいた浴衣。そこで一月ほど何も思わず横になりたい。希わくはここがいつの間にかその市になっているのだったら。――錯覚がようやく成功しはじめると私はそれからそれへ想像の絵具を塗りつけてゆく。なんのことはない、私の錯覚と壊れかかった街との二重写しである。そして私はその中に現実の私自身を見失うのを楽しんだ。
 　私はまたあの花火というやつが好きになった。花火そのものは第二段として、あの安っぽい絵具で赤や紫や黄や青や、さまざまの縞模様を持った花火の束、中山寺の星下り、花合戦、枯れすすき。それから鼠花火というのは一つずつ輪になっていて箱に詰めてある。そんなものが変に私の心を唆った。

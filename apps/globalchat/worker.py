@@ -425,10 +425,10 @@ class Worker(BaseWorker):
                         }
                     except discord.errors.NotFound:
                         pass
-            if not guild.id in self.speak_data_r18.keys():
-                self.speak_data_r18[guild.id] = 1
+            if not guild.id in self.speak_data.keys():
+                self.speak_data[guild.id] = 1
                 return True
-            self.speak_data_r18[guild.id] += 1
+            self.speak_data[guild.id] += 1
             return True
 
     async def show_speak_data(self, message: discord.Message):

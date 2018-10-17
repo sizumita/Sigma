@@ -8,7 +8,10 @@ import os.path
 import sqlite3
 import random
 
-from PrepareChain import PrepareChain
+if __name__ == '__main__':
+    from PrepareChain import PrepareChain
+else:
+    from classes.TextGenerator.PrepareChain import PrepareChain
 
 
 class GenerateText(object):
@@ -30,14 +33,14 @@ class GenerateText(object):
         """
         # DBが存在しないときは例外をあげる
         if not os.path.exists(PrepareChain.DB_PATH):
-            raise IOError(u"DBファイルが存在しません")
+            raise IOError("DBファイルが存在しません")
 
         # DBオープン
         con = sqlite3.connect(PrepareChain.DB_PATH)
         con.row_factory = sqlite3.Row
 
         # 最終的にできる文章
-        generated_text = u""
+        generated_text = ""
 
         # 指定の数だけ作成する
         for i in range(self.n):
@@ -71,7 +74,7 @@ class GenerateText(object):
             morphemes.append(triplet[2])
 
         # 連結
-        result = "".join([str(i) for i in morphemes[:-1]])
+        result = "".join([i for i in morphemes[:-1]])
 
         return result
 
@@ -83,7 +86,7 @@ class GenerateText(object):
         @return チェーンの情報の配列
         """
         # ベースとなるSQL
-        sql = u"select prefix1, prefix2, suffix, freq from chain_freqs where prefix1 = ?"
+        sql = "select prefix1, prefix2, suffix, freq from chain_freqs where prefix1 = ?"
 
         # prefixが2つなら条件に加える
         if len(prefixes) == 2:
@@ -150,6 +153,7 @@ class GenerateText(object):
                 probability.append(index)
 
         # ランダムに1つを選ぶ
+        # print(probability)
         chain_index = random.choice(probability)
 
         return chains[chain_index]
