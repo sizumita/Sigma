@@ -350,6 +350,8 @@ class Worker(BaseWorker):
         with open(self.dic_url, 'a') as f:
             f.write(f"{content[1]},{content[2]},{content[3]}\n")
         await message.channel.send(f"{content[1]},{content[2]},{content[3]}\nとして書き込みました。")
+        self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
+        self.generator.reload()
 
     async def logout(self):
         with open('./datas/say.pickle', mode='wb') as f:
