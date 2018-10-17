@@ -26,7 +26,10 @@ class GenerateText(object):
         @param n いくつの文章を生成するか
         """
         self.n = n
-        self.dic_url = "./apps/chan/data/userdic.csv"
+        self.dic_url = "./datas/userdic.csv"
+        self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
+
+    def reload(self):
         self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
 
     def generate(self, content):
@@ -89,6 +92,7 @@ class GenerateText(object):
             morphemes = self.generate_index(con)
             # 連結
             result = "".join([i for i in morphemes[:-1]])
+            r = self.t.tokenize(result, wakati=True)
             for key in keys:
                 if key in result:
                     return result

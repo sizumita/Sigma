@@ -61,7 +61,10 @@ cannnot_words = [
     "卍",
     "ナチス",
     "ヒトラー",
-    "ww"
+    "w",
+    "sex",
+    "セックス",
+    "オナニー",
 ]
 
 
@@ -78,11 +81,12 @@ class Worker(BaseWorker):
         super().__init__(client)
         global owner
         owner = client.get_user(212513828641046529)
-        self.dic_url = "./apps/chan/data/userdic.csv"
+        self.dic_url = "./datas/userdic.csv"
         self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
         self.say_b_a = {}
         self.hello_channel_ids = {}
         self.user_nick = {}
+        self.generator = GenerateText(n=1)
         client.loop.create_task(self.load())
 
     async def join(self, message: discord.Message):
@@ -268,8 +272,7 @@ class Worker(BaseWorker):
         chain = PrepareChain(content)
         triplet_freqs = chain.make_triplet_freqs()
         chain.save(triplet_freqs)
-        generator = GenerateText(n=1)
-        content = generator.generate(message.content)
+        content = self.generator.generate(message.content)
         if content:
             await message.channel.send(content)
 
