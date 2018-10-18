@@ -102,12 +102,12 @@ class GenerateText(object):
             except IndexError:
                 pass
 
-        for x in range(100):
+        for x in range(50):
             morphemes = self.generate_index(con)
+            # 連結
             result = "".join([i for i in morphemes[:-1]])
-            r = self.t.tokenize(result, wakati=True)
             for key in keys:
-                if key in r:
+                if key in result:
                     return result
 
         return result
