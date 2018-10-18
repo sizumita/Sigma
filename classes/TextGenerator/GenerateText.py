@@ -85,7 +85,7 @@ class GenerateText(object):
         result = ""
         data = self.t.tokenize(content)
         try:
-            keys = [i.surface for i in data if [t for t in ["動詞", "名詞", "形容動詞", "形容詞"] if t in i.part_of_speech.split(",")][0]]
+            keys = [i.surface for i in data if [t for t in ["動詞", "名詞"] if t in i.part_of_speech.split(",")][0]]
         except IndexError:
             keys = [i.surface for i in data if not i in ["?", "？", "。", "、", "！", "!"]]
         for x in range(50):
