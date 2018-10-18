@@ -85,21 +85,20 @@ class GenerateText(object):
         result = ""
         data = self.t.tokenize(content)
         try:
-            _keys = [i.surface for i in data if [t for t in ["動詞", "名詞", "形容動詞", "形容詞"] if t in i.part_of_speech.split(",")][0]]
-            keys = [u for u in _keys if not u in ["です", "ます", "だ"]]
+            _keys = [i.surface for i in data if i.part_of_speech.startswith(("動詞", "名詞", "形容動詞", "形容詞"))]
+            keys = [u for u in _keys if not u.startswith(( "です", "ます", "だ"))]
         except IndexError:
-            keys = [i.surface for i in data if not i in ["?", "？", "。", "、", "！", "!"]]
+            keys = [i.surface for i in data if not i.surface in ["?", "？", "。", "、", "！", "!"]]
         for x in range(50):
             morphemes = self.generate_index(con)
             # 連結
             result = "".join([i for i in morphemes[:-1]])
-            r = self.t.tokenize(result, wakati=True)
+            r = self.t.tokenize(result)
             try:
-                _rkeys = [i.surface for i in data if
-                         [t for t in ["動詞", "名詞", "形容動詞", "形容詞"] if t in i.part_of_speech.split(",")][0]]
-                for key in keys:
-                    if key in result:
-                        return result
+                _rkeys = [i.surface for i in r if i.part_of_speech.startswith(("動詞", "名詞", "形容動詞", "形容詞"))]
+                check = [key for key in _rkeys if key in keys]
+                if check:
+                    return result
             except IndexError:
                 pass
 
