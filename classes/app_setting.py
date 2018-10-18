@@ -38,3 +38,5 @@ class Setting:
                 prefix = groups[0]
                 arguments = groups[1].split()
                 command_pointer = pointer + 1
+                for l in data[command_pointer:]:
+                    pass

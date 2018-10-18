@@ -42,7 +42,7 @@ class AppManager(object):
 
         try:
             with open("./datas/agree.txt", "r") as f:
-                self.agree_users = f.read().split("\n")
+                self.agree_users = list(set([int(i) for i in f.read().split("\n")[1:] if i]))
         except FileNotFoundError:
             pass
 
