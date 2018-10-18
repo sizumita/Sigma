@@ -77,6 +77,9 @@ cannnot_words = [
     "野獣先輩",
     "迫真",
     "ンアッー!",
+    "114",
+    "514",
+    "1919",
 ]
 
 
@@ -100,6 +103,7 @@ class Worker(BaseWorker):
         self.user_nick = {}
         self.generator = GenerateText(n=1)
         self.log_channel = None
+        self.not_rlearn_channel = []
         client.loop.create_task(self.load())
 
     async def join(self, message: discord.Message):
@@ -276,13 +280,23 @@ class Worker(BaseWorker):
             return True
 
     async def dialogue(self, message: discord.Message):
+        if message.content == "-not":
+            try:
+                if message.channel.id in self.not_rlearn_channel:
+                    self.not_rlearn_channel.remove(message.channel.id)
+                    await message.channel.send("設定完了-削除")
+                else:
+                    self.not_rlearn_channel.append(message.channel.id)
+                    await message.channel.send("設定完了-追加")
+            except:
+                pass
         content = message.clean_content
         if message.channel.is_nsfw():
             return
         for x in cannnot_words:
             if x in message.content:
                 return
-        if len(content) > 3:
+        if len(content) > 3 or not message.channel.id in self.not_rlearn_channel:
             chain = PrepareChain(content)
             triplet_freqs = chain.make_triplet_freqs()
             chain.save(triplet_freqs)

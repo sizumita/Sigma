@@ -89,7 +89,7 @@ class GenerateText(object):
             _keys = [i.surface for i in data if i.part_of_speech.startswith(("動詞", "名詞", "形容動詞", "形容詞"))]
             keys = [u for u in _keys if not u.startswith(( "です", "ます", "だ"))]
         except IndexError:
-            keys = [i.surface for i in data if not i.surface in ["?", "？", "。", "、", "！", "!"]]
+            keys = [i.surface for i in data if not i.surface in ["?", "？", "。", "、", "！", "!", "ー"]]
         for x in range(50):
             morphemes = self.generate_index(con)
             # 連結
