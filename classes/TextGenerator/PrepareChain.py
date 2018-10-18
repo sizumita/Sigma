@@ -20,7 +20,7 @@ class PrepareChain(object):
     BEGIN = "__BEGIN_SENTENCE__"
     END = "__END_SENTENCE__"
 
-    DB_PATH = "chain.db"
+    DB_PATH = "./datas/chain.db"
     DB_SCHEMA_PATH = "./classes/TextGenerator/schema.sql"
 
     def __init__(self, text):

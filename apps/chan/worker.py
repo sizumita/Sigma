@@ -281,6 +281,7 @@ class Worker(BaseWorker):
 
     async def dialogue(self, message: discord.Message):
         if message.content == "-not":
+            print(self.not_rlearn_channel)
             try:
                 if message.channel.id in self.not_rlearn_channel:
                     self.not_rlearn_channel.remove(message.channel.id)
