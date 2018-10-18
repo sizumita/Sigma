@@ -51,7 +51,7 @@ tips = [
     "`!timer`で、タイマーを起動することができます。",
     "`!global all`で、全てのglobal chatにコネクトしているチャンネルを見ることができます。",
     "Sigmaの公式サーバーはこちら -> https://discord.gg/fVsAjm9",
-    "`sigma link`でSigma|すみどらちゃんの招待を受け取れます。",
+    "`sigma link`でSigma|すみどらちゃんのBOTの招待を受け取れます。",
     "Global Chat, Sigmaのコマンド類を利用するには、利用規約への同意が必要です。`sigma contract`で確認してください。",
     "Global Chatに、広告を載せたい場合は、`!ad`で。",
 ]
