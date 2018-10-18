@@ -66,6 +66,16 @@ cannnot_words = [
     "セックス",
     "オナニー",
     "ｗ",
+    "＠",
+    "@",
+    "淫夢",
+    "(便乗)",
+    "（便乗）",
+    "バカ",
+    "馬鹿",
+    "死ね",
+    "野獣先輩",
+    "迫真",
 ]
 
 
@@ -282,7 +292,7 @@ class Worker(BaseWorker):
                                         f"guild: {message.guild.name}(id:{message.guild.id})\n```")
 
     async def on_message(self, message: discord.Message):
-        if message.channel.id in [501902669695418368, 501927723627970560, 501904504485183489, 501974208319062026, 433572196548345866]:
+        if message.channel.id in [501902669695418368, 501927723627970560, 501904504485183489, 501974208319062026, 433572196548345866, 502425962969956352]:
             self.client.loop.create_task(self.dialogue(message))
             return True
 
