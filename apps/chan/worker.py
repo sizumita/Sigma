@@ -297,7 +297,7 @@ class Worker(BaseWorker):
         for x in cannnot_words:
             if x in message.content:
                 return
-        if len(content) > 3 or not message.channel.id in self.not_rlearn_channel:
+        if len(content) > 3 or message.channel.id in self.not_rlearn_channel:
             chain = PrepareChain(content)
             triplet_freqs = chain.make_triplet_freqs()
             chain.save(triplet_freqs)
