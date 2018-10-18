@@ -88,6 +88,7 @@ class Worker(BaseWorker):
         self.hello_channel_ids = {}
         self.user_nick = {}
         self.generator = GenerateText(n=1)
+        self.log_channel = None
         client.loop.create_task(self.load())
 
     async def join(self, message: discord.Message):
@@ -95,6 +96,7 @@ class Worker(BaseWorker):
         return True
 
     async def load(self):
+        self.log_channel = self.client.get_channel(502394237589913600)
         try:
             async with aiofiles.open('./datas/say.pickle', 'rb') as f:
                 self.say_b_a = pickle.loads(await f.read())
@@ -276,6 +278,8 @@ class Worker(BaseWorker):
         content = self.generator.generate(message.content)
         if content:
             await message.channel.send(content)
+            await self.log_channel.send(f"```\n{message.content} from {message.author.name}(id:{message.author.id})\n"
+                                        f"guild: {message.guild.name}(id:{message.guild.id})\n```")
 
     async def on_message(self, message: discord.Message):
         if message.channel.id in [501902669695418368, 501927723627970560, 501904504485183489, 501974208319062026, 433572196548345866]:
