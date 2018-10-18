@@ -266,15 +266,15 @@ class Worker(BaseWorker):
 
     async def dialogue(self, message: discord.Message):
         content = message.clean_content
-
         if message.channel.is_nsfw():
             return
         for x in cannnot_words:
             if x in message.content:
                 return
-        chain = PrepareChain(content)
-        triplet_freqs = chain.make_triplet_freqs()
-        chain.save(triplet_freqs)
+        if len(content) > 3:
+            chain = PrepareChain(content)
+            triplet_freqs = chain.make_triplet_freqs()
+            chain.save(triplet_freqs)
         content = self.generator.generate(message.content)
         if content:
             await message.channel.send(content)
