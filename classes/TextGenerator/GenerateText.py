@@ -84,12 +84,13 @@ class GenerateText(object):
         """
         result = ""
         data = self.t.tokenize(content)
+        base_keys = [i.surface for i in data]
         try:
             _keys = [i.surface for i in data if i.part_of_speech.startswith(("動詞", "名詞", "形容動詞", "形容詞"))]
             keys = [u for u in _keys if not u.startswith(( "です", "ます", "だ"))]
         except IndexError:
             keys = [i.surface for i in data if not i.surface in ["?", "？", "。", "、", "！", "!"]]
-        for x in range(100):
+        for x in range(50):
             morphemes = self.generate_index(con)
             # 連結
             result = "".join([i for i in morphemes[:-1]])
@@ -101,9 +102,9 @@ class GenerateText(object):
                     return result
             except IndexError:
                 pass
-
         for x in range(50):
             morphemes = self.generate_index(con)
+            print(morphemes)
             # 連結
             result = "".join([i for i in morphemes[:-1]])
             for key in keys:
