@@ -104,10 +104,9 @@ class GenerateText(object):
                 pass
         for x in range(50):
             morphemes = self.generate_index(con)
-            print(morphemes)
             # 連結
             result = "".join([i for i in morphemes[:-1]])
-            for key in keys:
+            for key in base_keys:
                 if key in result:
                     return result
 
