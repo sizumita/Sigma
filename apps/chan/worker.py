@@ -288,8 +288,9 @@ class Worker(BaseWorker):
                 else:
                     self.not_rlearn_channel.append(message.channel.id)
                     await message.channel.send("設定完了-追加")
+                return
             except:
-                pass
+                return
         content = message.clean_content
         if message.channel.is_nsfw():
             return
