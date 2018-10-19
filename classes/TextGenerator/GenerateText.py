@@ -20,11 +20,12 @@ class GenerateText(object):
     文章生成用クラス
     """
 
-    def __init__(self, n=5):
+    def __init__(self, n=5, db=None):
         u"""
         初期化メソッド
         @param n いくつの文章を生成するか
         """
+        self.db = db if db else PrepareChain.DB_PATH
         self.n = n
         self.dic_url = "./datas/userdic.csv"
         self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
@@ -38,11 +39,11 @@ class GenerateText(object):
         @return 生成された文章
         """
         # DBが存在しないときは例外をあげる
-        if not os.path.exists(PrepareChain.DB_PATH):
+        if not os.path.exists(self.db):
             raise IOError("DBファイルが存在しません")
 
         # DBオープン
-        con = sqlite3.connect(PrepareChain.DB_PATH)
+        con = sqlite3.connect(self.db)
         con.row_factory = sqlite3.Row
 
         # 最終的にできる文章

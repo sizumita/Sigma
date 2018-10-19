@@ -58,6 +58,8 @@ hello = [
 ]
 what_do_say = re.compile(r"^(.+)(って|と)(言ったら|いったら)(.+)(って|と)(言って|いって).*$")
 cannnot_words = [
+    "ファシスト",
+    "ファシズム",
     "卍",
     "ナチス",
     "ヒトラー",
@@ -282,7 +284,6 @@ class Worker(BaseWorker):
 
     async def dialogue(self, message: discord.Message):
         if message.content == "-not":
-            print(self.not_rlearn_channel)
             try:
                 if message.channel.id in self.not_rlearn_channel:
                     self.not_rlearn_channel.remove(message.channel.id)
@@ -308,6 +309,21 @@ class Worker(BaseWorker):
             await message.channel.send(content)
             await self.log_channel.send(f"```\n{message.content} from {message.author.name}(id:{message.author.id})\n"
                                         f"guild: {message.guild.name}(id:{message.guild.id})\n```")
+
+    async def dialogue_own(self, message: discord.Message):
+        generator1 = GenerateText(n=1, db="./datas/chain1.db")
+        generator2 = GenerateText(n=1, db="./datas/chain2.db")
+        start = await message.channel.send("ねえねえ")
+        mess = start
+        for x in range(50):
+            content = generator1.generate(mess.content.replace("```\nclone2\n```\n"))
+            if content:
+                mess = await message.channel.send("```\nclone1\n```\n" + content)
+            await asyncio.sleep(2)
+            content = generator2.generate(mess.content.replace("```\nclone1\n```\n"))
+            if content:
+                mess = await message.channel.send("```\nclone2\n```\n" + content)
+            await asyncio.sleep(2)
 
     async def on_message(self, message: discord.Message):
         if message.channel.id in [501902669695418368, 501927723627970560, 501904504485183489, 501974208319062026, 433572196548345866, 502425962969956352]:
@@ -361,11 +377,13 @@ class Worker(BaseWorker):
                         dic = self.say_b_a[message.guild.id]
                         text = "```cpp\nユーザーが言うことば : 返すことば\n"
                         for key, value in dic.items():
-                            text += f"{key} : {value}"
+                            text += f"{key} : {value}\n"
                             if len(text) > 1900:
                                 break
                         await channel.send(text + "\n```")
                         return True
+                if content == "クローンと会話" and message.author.id == 212513828641046529:
+                    self.client.loop.create_task(self.dialogue_own(message))
                 return True
             await send_waiting()
         try:
