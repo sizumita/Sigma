@@ -316,11 +316,11 @@ class Worker(BaseWorker):
         start = await message.channel.send("ねえねえ")
         mess = start
         for x in range(50):
-            content = generator1.generate(mess.content.replace("```\nclone2\n```\n"))
+            content = generator1.generate(mess.content.replace("```\nclone2\n```\n", ""))
             if content:
                 mess = await message.channel.send("```\nclone1\n```\n" + content)
             await asyncio.sleep(2)
-            content = generator2.generate(mess.content.replace("```\nclone1\n```\n"))
+            content = generator2.generate(mess.content.replace("```\nclone1\n```\n", ""))
             if content:
                 mess = await message.channel.send("```\nclone2\n```\n" + content)
             await asyncio.sleep(2)
