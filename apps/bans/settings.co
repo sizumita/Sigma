@@ -2,13 +2,13 @@
 :ver 1.0.1
 :desc　Discord BANsは、Discordを守るために作られました。
 :continue True
+:per [1,2]
 :command .gban $ [str] [str]
-$ .gban [ユーザーid もしくは mention] [理由]
-$ Gbanします。Gbanした記録は残され、\その人が導入鯖に入った場合,他のサーバーに通知が行きます。
-$ admin
+$look .gban [ユーザーid もしくは mention] [理由]
+$desc Gbanします。Gbanした記録は残され、\その人が導入鯖に入った場合,他のサーバーに通知が行きます。
 :command .protect start
-$ .protect start
-$ DiscordBANs Server Protectを発動します。発動された場合、.protect setで設定した役職か、\Administerが設定されたユーザー以外が全体メンションまたは招待URlを送信した場合、削除しキックします。
-:command .protect set [str]
-$ .protect set [役職idもしくはmention]
-$ 設定した役職のメンション＆招待送信を許可します。\(サーバー設定とは関係ありません。)
+$look .protect start
+$desc DiscordBANs Server Protectを発動します。発動された場合、.protect setで設定した役職か、\Administerが設定されたユーザー以外が全体メンションまたは招待URlを送信した場合、削除しキックします。
+:command .protect set $ [str]
+$look .protect set [役職idもしくはmention]
+$desc 設定した役職のメンション＆招待送信を許可します。\(サーバー設定とは関係ありません。)

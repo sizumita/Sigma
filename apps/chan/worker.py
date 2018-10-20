@@ -307,6 +307,10 @@ class Worker(BaseWorker):
                 self.is_shiritori.remove(message.author.id)
                 return
             conv_text = self.conv.do(mess.content)
+            if conv_text[-1] == "ん":
+                await channel.send("`ん`はダメだよーw！私の勝ち！")
+                self.is_shiritori.remove(message.author.id)
+                return
             if conv_text in words:
                 await channel.send("その単語はもう出たよ！私の勝ち！")
                 self.is_shiritori.remove(message.author.id)
@@ -331,8 +335,6 @@ class Worker(BaseWorker):
             words.append(w)
             await channel.send(f"じゃあねえ...{w}で。\nどうぞ->")
 
-
-
     async def command(self, message: discord.Message, command: str, args: list, point: int):
         if command == "!trend":
             await self.trend(message)
@@ -341,7 +343,7 @@ class Worker(BaseWorker):
             await self.get_data(message)
             return True
         if command == "!しりとり":
-            await self.shiritori(message)
+            self.client.loop.create_task(self.shiritori(message))
             return True
 
     async def dialogue(self, message: discord.Message):
@@ -448,6 +450,10 @@ class Worker(BaseWorker):
                         return True
                 if content == "クローンと会話" and message.author.id == 212513828641046529:
                     self.client.loop.create_task(self.dialogue_own(message))
+                    return True
+                _content = self.generator.generate(message.content)
+                if content:
+                    await message.channel.send(_content)
                 return True
             await send_waiting()
         try:

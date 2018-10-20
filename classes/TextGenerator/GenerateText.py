@@ -103,7 +103,7 @@ class GenerateText(object):
                     return result
             except IndexError:
                 pass
-        for x in range(50):
+        for x in range(100):
             morphemes = self.generate_index(con)
             # 連結
             result = "".join([i for i in morphemes[:-1]])
