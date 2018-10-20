@@ -143,8 +143,8 @@ class MyClient(discord.Client):
         except:
             import traceback
             trace = traceback.format_exc()
-            await self.get_channel(497046680806621184).send(trace)
-
+            # await self.get_channel(497046680806621184).send(trace)
+            raise
     async def on_member_join(self, member: discord.Member):
         await self.app_manager.member_join(member)
 

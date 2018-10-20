@@ -10,6 +10,9 @@ import random
 import aiofiles
 from classes.TextGenerator.PrepareChain import PrepareChain
 from classes.TextGenerator.GenerateText import GenerateText
+from classes.Wikipedia import search_word
+from pykakasi import kakasi
+from classes.Jiten import search_word_from_jiten
 owner = None
 help_message = """
 ```
@@ -107,6 +110,11 @@ class Worker(BaseWorker):
         self.generator = GenerateText(n=1)
         self.log_channel = None
         self.not_rlearn_channel = []
+        self.is_shiritori = []
+        self.kakasi = kakasi()
+        self.kakasi.setMode("J", "H")
+        self.kakasi.setMode("K", "H")
+        self.conv = self.kakasi.getConverter()
         client.loop.create_task(self.load())
 
     async def join(self, message: discord.Message):
@@ -274,6 +282,55 @@ class Worker(BaseWorker):
         ty += f'{message.guild.name}, {message.guild.id}, len {len(c)}'
         await owner.send(ty)
 
+    async def shiritori(self, message: discord.Message):
+        if message.author.id in self.is_shiritori:
+            return
+        self.is_shiritori.append(message.author.id)
+
+        def pred(m):
+            return m.author == message.author and m.channel == message.channel
+        await message.channel.send("しりとりしよう！最後にアルファベットは来ないようにしてね！\n私から行くよ、最初は、\nしりとり [り]")
+        words = ["しりとり"]
+        last_word = "り"
+        channel = message.channel
+        while True:
+            try:
+                mess = await self.client.wait_for('message', check=pred, timeout=60)
+            except asyncio.TimeoutError:
+                await message.channel.send("早く答えないなら終わるね！私の勝ち！")
+                self.is_shiritori.remove(message.author.id)
+                return False
+            if re.match("[a-zA-Z0-9]", mess.content[-1]):
+                await channel.send("最後を数字かアルファベットにしないで！私の勝ち！")
+                self.is_shiritori.remove(message.author.id)
+                return
+            conv_text = self.conv.do(mess.content)
+            if conv_text in words:
+                await channel.send("その単語はもう出たよ！私の勝ち！")
+                self.is_shiritori.remove(message.author.id)
+                return
+            if conv_text[0] != last_word:
+                await channel.send("単語の最初が違う！私の勝ち！")
+                self.is_shiritori.remove(message.author.id)
+                return
+            token = list(set([i.part_of_speech[0:2] for i in self.t.tokenize(mess.content)]))
+            if not len(token) == 1 or token[0] != "名詞":
+                await channel.send("そんな単語ないよ！私の勝ち！")
+                self.is_shiritori.remove(message.author.id)
+                return
+            s_word = search_word(mess.content)
+            if not s_word:
+                await channel.send("そんな単語ないよ！私の勝ち！")
+                self.is_shiritori.remove(message.author.id)
+                return
+            last_word = conv_text[-1]
+            w = search_word_from_jiten(last_word, words, self.t)
+            last_word = w[-2]
+            words.append(w)
+            await channel.send(f"じゃあねえ...{w}で。\nどうぞ->")
+
+
+
     async def command(self, message: discord.Message, command: str, args: list, point: int):
         if command == "!trend":
             await self.trend(message)
@@ -281,8 +338,13 @@ class Worker(BaseWorker):
         if command == "!data":
             await self.get_data(message)
             return True
+        if command == "!しりとり":
+            await self.shiritori(message)
+            return True
 
     async def dialogue(self, message: discord.Message):
+        if message.author.id in self.is_shiritori:
+            return
         if message.content == "-not":
             try:
                 if message.channel.id in self.not_rlearn_channel:
