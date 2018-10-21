@@ -1,6 +1,6 @@
 :name Discord BANs
 :ver 1.0.1
-:desc　Discord BANsは、Discordを守るために作られました。
+:desc Discord BANsは、Discordを守るために作られました。
 :continue True
 :per [1,2]
 :command .gban $ [str] [str]

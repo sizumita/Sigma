@@ -85,19 +85,22 @@ class GenerateText(object):
         """
         result = ""
         data = self.t.tokenize(content)
+        # print([i.surface for i in data])
+        # print([i.part_of_speech for i in data])
         base_keys = [i.surface for i in data]
         try:
-            _keys = [i.surface for i in data if i.part_of_speech.startswith(("動詞", "名詞", "形容動詞", "形容詞"))]
-            keys = [u for u in _keys if not u.startswith(( "です", "ます", "だ"))]
+            _keys = [i.surface for i in data if i.part_of_speech.startswith(("動詞,自立", "名詞,一般", "名詞,代名詞", "形容動詞", "形容詞"))]
+            keys = [u for u in _keys if not u.startswith(("です", "ます", "だ"))]
         except IndexError:
-            keys = [i.surface for i in data if not i.surface in ["?", "？", "。", "、", "！", "!", "ー"]]
+            keys = [i.surface for i in data if not i.part_of_speech.startswith("記号")]
+
         for x in range(50):
             morphemes = self.generate_index(con)
             # 連結
             result = "".join([i for i in morphemes[:-1]])
             r = self.t.tokenize(result)
             try:
-                _rkeys = [i.surface for i in r if i.part_of_speech.startswith(("動詞", "名詞", "形容動詞", "形容詞"))]
+                _rkeys = [i.surface for i in r if i.part_of_speech.startswith(("動詞,自立", "名詞,一般", "名詞,代名詞", "形容動詞", "形容詞"))]
                 check = [key for key in _rkeys if key in keys]
                 if check:
                     return result

@@ -31,6 +31,7 @@ commands:
 """
 what_to_do = """
 すみどらちゃんって呼びかけてくれたら反応するよ！
+
 ```
 何が出来る？って言ってくれればこれを言うよ！
 
@@ -43,8 +44,9 @@ what_to_do = """
 このチャンネルで挨拶してって言ったら新しい人に挨拶するようになるよ！
 
 ニックネームを覚えてっていったら他の鯖に入ったときにニックネームを自動的に変えてあげる！
-```
 
+しりとりって言ったらしりとりするよ！
+```
 """
 omi = {
     "大吉": ["今日はいいことがいっぱいあるかも！", "お金拾っちゃったりして？！", "告白すれば必ず叶うよ！"],
@@ -109,7 +111,7 @@ class Worker(BaseWorker):
         self.say_b_a = {}
         self.hello_channel_ids = {}
         self.user_nick = {}
-        self.generator = GenerateText(n=1)
+        self.generator = GenerateText(n=3)
         self.log_channel = None
         self.not_rlearn_channel = []
         self.is_shiritori = []
@@ -342,9 +344,6 @@ class Worker(BaseWorker):
         if command == "!data":
             await self.get_data(message)
             return True
-        if command == "!しりとり":
-            self.client.loop.create_task(self.shiritori(message))
-            return True
 
     async def dialogue(self, message: discord.Message):
         if message.author.id in self.is_shiritori:
@@ -371,6 +370,8 @@ class Worker(BaseWorker):
             triplet_freqs = chain.make_triplet_freqs()
             chain.save(triplet_freqs)
         content = self.generator.generate(message.content)
+        if not content.endswith("。"):
+            content += "。"
         if content:
             await message.channel.send(content)
             await self.log_channel.send(f"```\n{message.content} from {message.author.name}(id:{message.author.id})\n"
@@ -399,7 +400,7 @@ class Worker(BaseWorker):
         def pred(m):
             return m.author == message.author and m.channel == message.channel
         if message.content.startswith("すみどらちゃん"):
-            await message.channel.send("なあに？")
+            await message.channel.send("なあに？\n(わからなかったら何ができる？って聞いてね)")
             try:
                 mess = await self.client.wait_for('message', check=pred, timeout=30)
             except asyncio.TimeoutError:
@@ -451,8 +452,13 @@ class Worker(BaseWorker):
                 if content == "クローンと会話" and message.author.id == 212513828641046529:
                     self.client.loop.create_task(self.dialogue_own(message))
                     return True
-                _content = self.generator.generate(message.content)
-                if content:
+                if re.search(".*しりとり.*", content):
+                    self.client.loop.create_task(self.shiritori(message))
+                    return True
+                _content = self.generator.generate(content)
+                if not _content.endswith("。"):
+                    _content += "。"
+                if _content:
                     await message.channel.send(_content)
                 return True
             await send_waiting()
