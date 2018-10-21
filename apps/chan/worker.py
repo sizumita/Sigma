@@ -370,8 +370,6 @@ class Worker(BaseWorker):
             triplet_freqs = chain.make_triplet_freqs()
             chain.save(triplet_freqs)
         content = self.generator.generate(message.content)
-        if not content.endswith("。"):
-            content += "。"
         if content:
             await message.channel.send(content)
             await self.log_channel.send(f"```\n{message.content} from {message.author.name}(id:{message.author.id})\n"
@@ -456,8 +454,6 @@ class Worker(BaseWorker):
                     self.client.loop.create_task(self.shiritori(message))
                     return True
                 _content = self.generator.generate(content)
-                if not _content.endswith("。"):
-                    _content += "。"
                 if _content:
                     await message.channel.send(_content)
                 return True
