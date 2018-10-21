@@ -3,7 +3,7 @@
 u"""
 マルコフ連鎖を用いて適当な文章を自動生成するファイル
 """
-
+import difflib
 import os.path
 import sqlite3
 import random
@@ -45,19 +45,35 @@ class GenerateText(object):
         # DBオープン
         con = sqlite3.connect(self.db)
         con.row_factory = sqlite3.Row
+        data = self.t.tokenize(content)
+        base_keys = [i.surface for i in data]
+        try:
+            _keys = [i.surface for i in data if
+                     i.part_of_speech.startswith(("動詞", "名詞", "名詞", "形容動詞", "形容詞"))]
+            keys = [u for u in _keys if not u.startswith(("です", "ます", "だ"))]
+        except IndexError:
+            keys = [i.surface for i in data if not i.part_of_speech.startswith("記号")]
 
-        # 最終的にできる文章
-        generated_text = ""
-
+        # 最終的にできる文章たち
+        generated_texts = []
         # 指定の数だけ作成する
         for i in range(self.n):
-            text = self._generate_sentence(con, content)
-            generated_text += text if text.endswith("。") else text + "。"
-
+            text = self._generate_sentence(con, content, keys, base_keys)
+            generated_texts.append(text)
+        # print(generated_texts)
+        most_counts = None
+        for i in generated_texts:
+            count = 0
+            if not keys:
+                count += i.count(content)
+            for k in keys:
+                count += i.count(k)
+            if not most_counts or most_counts[1] < count:
+                most_counts = (i, count)
         # DBクローズ
         con.close()
 
-        return generated_text
+        return most_counts[0]
 
     def generate_index(self, con):
         # 生成文章のリスト
@@ -77,22 +93,16 @@ class GenerateText(object):
 
         return morphemes
 
-    def _generate_sentence(self, con, content):
+    def _generate_sentence(self, con, content, keys, base_keys):
         u"""
         ランダムに一文を生成する
         @param con DBコネクション
         @return 生成された1つの文章
         """
         result = ""
-        data = self.t.tokenize(content)
+
         # print([i.surface for i in data])
         # print([i.part_of_speech for i in data])
-        base_keys = [i.surface for i in data]
-        try:
-            _keys = [i.surface for i in data if i.part_of_speech.startswith(("動詞,自立", "名詞,一般", "名詞,代名詞", "形容動詞", "形容詞"))]
-            keys = [u for u in _keys if not u.startswith(("です", "ます", "だ"))]
-        except IndexError:
-            keys = [i.surface for i in data if not i.part_of_speech.startswith("記号")]
 
         for x in range(50):
             morphemes = self.generate_index(con)
@@ -201,6 +211,5 @@ class GenerateText(object):
 if __name__ == '__main__':
     generator = GenerateText()
     print(generator.generate("a"))
-
 
 
