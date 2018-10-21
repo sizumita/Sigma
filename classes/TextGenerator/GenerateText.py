@@ -21,6 +21,7 @@ class GenerateText(object):
         初期化メソッド
         @param n いくつの文章を生成するか
         """
+        self.loop = 0
         self.db = db if db else PrepareChain.DB_PATH
         self.n = n
         self.dic_url = "./datas/userdic.csv"
@@ -29,7 +30,8 @@ class GenerateText(object):
     def reload(self):
         self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
 
-    def generate(self, content, low=False, _wadai=""):
+    def generate(self, content, *, low=False, _wadai=""):
+        self.loop += 1
         u"""
         実際に生成する
         @return 生成された文章
@@ -83,9 +85,10 @@ class GenerateText(object):
                 most_counts = (i, count)
         # DBクローズ
         con.close()
-        if low:
+        if low and not self.loop > 5:
             if most_counts[1] == 0:
-                return self.generate(content, low)
+                return self.generate(content, low=low, _wadai=wadai)
+        self.loop = 0
         return [most_counts[0], wadai]
 
     def generate_index(self, con):
