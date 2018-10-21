@@ -3,7 +3,6 @@
 u"""
 マルコフ連鎖を用いて適当な文章を自動生成するファイル
 """
-import difflib
 import os.path
 import sqlite3
 import random
