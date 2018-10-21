@@ -371,7 +371,7 @@ class Worker(BaseWorker):
             chain = PrepareChain(content)
             triplet_freqs = chain.make_triplet_freqs()
             chain.save(triplet_freqs)
-        generated = self.generator.generate(message.content, _wadai=self.wadai)
+        generated = self.generator.generate(message.content, _wadai=self.wadai, low=True)
         content = generated[0]
         self.wadai = generated[1]
         print(self.wadai)

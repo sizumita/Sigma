@@ -23,7 +23,7 @@ class MyClient(discord.Client):
         self.useing = []
         self.add_point_user = []
         self.running = False
-        self.system_ban_id = []
+        self.system_ban_id = [277712437430452224,285677404196700161,454229273172115466,425637156422287360,432873988247781386,440846145317502987,447717478513115137]
 
     async def using(self, message: discord.Message):
         self.useing.append(message.author.id)

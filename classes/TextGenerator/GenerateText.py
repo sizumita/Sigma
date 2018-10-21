@@ -86,8 +86,9 @@ class GenerateText(object):
         # DBクローズ
         con.close()
         if low and not self.loop > 5:
-            if most_counts[1] == 0:
-                return self.generate(content, low=low, _wadai=wadai)
+            if wadai:
+                if most_counts[1] == 0:
+                    return self.generate(content, low=low, _wadai=wadai)
         self.loop = 0
         return [most_counts[0], wadai]
 
