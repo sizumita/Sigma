@@ -85,7 +85,7 @@ class PrepareChain(object):
         @return 形態素で分割された配列
         """
         token = self.t.tokenize(sentence, wakati=True)
-        if len(token) < 6:
+        if len(token) < 4:
             return []
         return token
 

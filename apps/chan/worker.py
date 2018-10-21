@@ -111,7 +111,7 @@ class Worker(BaseWorker):
         self.say_b_a = {}
         self.hello_channel_ids = {}
         self.user_nick = {}
-        self.generator = GenerateText(n=3)
+        self.generator = GenerateText(n=5)
         self.log_channel = None
         self.not_rlearn_channel = []
         self.is_shiritori = []
@@ -119,6 +119,7 @@ class Worker(BaseWorker):
         self.kakasi.setMode("J", "H")
         self.kakasi.setMode("K", "H")
         self.conv = self.kakasi.getConverter()
+        self.wadai = ""
         client.loop.create_task(self.load())
 
     async def join(self, message: discord.Message):
@@ -346,6 +347,7 @@ class Worker(BaseWorker):
             return True
 
     async def dialogue(self, message: discord.Message):
+
         if message.author.id in self.is_shiritori:
             return
         if message.content == "-not":
@@ -369,7 +371,10 @@ class Worker(BaseWorker):
             chain = PrepareChain(content)
             triplet_freqs = chain.make_triplet_freqs()
             chain.save(triplet_freqs)
-        content = self.generator.generate(message.content)
+        generated = self.generator.generate(message.content, self.wadai)
+        content = generated[0]
+        self.wadai = generated[1]
+        print(self.wadai)
         if content:
             await message.channel.send(content)
             await self.log_channel.send(f"```\n{message.content} from {message.author.name}(id:{message.author.id})\n"

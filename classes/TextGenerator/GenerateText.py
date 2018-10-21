@@ -15,9 +15,6 @@ else:
 
 
 class GenerateText(object):
-    u"""
-    文章生成用クラス
-    """
 
     def __init__(self, n=5, db=None):
         u"""
@@ -32,7 +29,7 @@ class GenerateText(object):
     def reload(self):
         self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
 
-    def generate(self, content):
+    def generate(self, content, low=False, _wadai=""):
         u"""
         実際に生成する
         @return 生成された文章
@@ -40,12 +37,27 @@ class GenerateText(object):
         # DBが存在しないときは例外をあげる
         if not os.path.exists(self.db):
             raise IOError("DBファイルが存在しません")
-
-        # DBオープン
+        wadai = _wadai
         con = sqlite3.connect(self.db)
         con.row_factory = sqlite3.Row
         data = self.t.tokenize(content)
         base_keys = [i.surface for i in data]
+        base_keys_pos = [(i.surface, i.part_of_speech) for i in data]
+        if not wadai or "ねえねえ" in content:
+            for i in range(len(base_keys_pos)):
+                try:
+                    key = base_keys_pos[i]
+                    if key[1].startswith("名詞,一般"):
+                        if base_keys_pos[i + 1][0].startswith(("は", "が", "に")):
+                            wadai = key[0]
+                except IndexError:
+                    pass
+            else:
+                if wadai == _wadai:
+                    wadai = ""
+        if wadai:
+            content = f"{wadai}は、" + content
+
         try:
             _keys = [i.surface for i in data if
                      i.part_of_speech.startswith(("動詞", "名詞", "名詞", "形容動詞", "形容詞"))]
@@ -57,7 +69,7 @@ class GenerateText(object):
         generated_texts = []
         # 指定の数だけ作成する
         for i in range(self.n):
-            text = self._generate_sentence(con, content, keys, base_keys)
+            text = self._generate_sentence(con, keys, base_keys)
             generated_texts.append(text)
         # print(generated_texts)
         most_counts = None
@@ -71,8 +83,10 @@ class GenerateText(object):
                 most_counts = (i, count)
         # DBクローズ
         con.close()
-
-        return most_counts[0]
+        if low:
+            if most_counts[1] == 0:
+                return self.generate(content, low)
+        return [most_counts[0], wadai]
 
     def generate_index(self, con):
         # 生成文章のリスト
@@ -92,7 +106,7 @@ class GenerateText(object):
 
         return morphemes
 
-    def _generate_sentence(self, con, content, keys, base_keys):
+    def _generate_sentence(self, con, keys, base_keys):
         u"""
         ランダムに一文を生成する
         @param con DBコネクション
