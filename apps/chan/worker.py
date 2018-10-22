@@ -367,10 +367,10 @@ class Worker(BaseWorker):
         for x in cannnot_words:
             if x in message.content:
                 return
-        if len(content) > 3 or message.channel.id in self.not_rlearn_channel and message.author.id == 212513828641046529:
-            chain = PrepareChain(content)
-            triplet_freqs = chain.make_triplet_freqs()
-            chain.save(triplet_freqs)
+        # if len(content) > 3 or message.channel.id in self.not_rlearn_channel and message.author.id == 212513828641046529:
+        #     chain = PrepareChain(content)
+        #     triplet_freqs = chain.make_triplet_freqs()
+        #     chain.save(triplet_freqs)
         generated = self.generator.generate(message.content, _wadai=self.wadai, low=True)
         content = generated[0]
         self.wadai = generated[1]
