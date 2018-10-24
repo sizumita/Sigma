@@ -67,10 +67,9 @@ class GenerateText(object):
         except IndexError:
             keys = [i.surface for i in data if not i.part_of_speech.startswith("記号")]
         most_counts = None
-        loop = 0
 
         def func():
-            global most_counts, loop
+            # global most_counts, loop
             # 最終的にできる文章たち
             generated_texts = []
             # 指定の数だけ作成する
@@ -78,7 +77,7 @@ class GenerateText(object):
                 text = self._generate_sentence(con, keys, base_keys)
                 generated_texts.append(text)
             # print(generated_texts)
-            most_counts = None
+            _most_counts = None
             for i in generated_texts:
                 count = 0
                 if not keys:
@@ -86,15 +85,16 @@ class GenerateText(object):
                 for k in keys:
                     count += i.count(k)
                 if not most_counts or most_counts[1] < count:
-                    most_counts = (i, count)
-            loop += 1
+                    _most_counts = (i, count)
+            return _most_counts
         # DBクローズ
-        con.close()
-        if low and not loop > 5:
-            if wadai:
+        for x in range(5):
+            most_counts = func()
+            if low and wadai:
                 if most_counts[1] == 0:
-                    return self.generate(content, low=low, _wadai=wadai)
-        self.loop = 0
+                    continue
+            break
+        con.close()
         return [most_counts[0], wadai]
 
     def generate_index(self, con):
