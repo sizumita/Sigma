@@ -57,7 +57,7 @@ class GenerateText(object):
             else:
                 if wadai == _wadai:
                     wadai = ""
-        if wadai:
+        if wadai and not wadai in content:
             content = f"{wadai}は、" + content
 
         try:
@@ -66,26 +66,31 @@ class GenerateText(object):
             keys = [u for u in _keys if not u.startswith(("です", "ます", "だ"))]
         except IndexError:
             keys = [i.surface for i in data if not i.part_of_speech.startswith("記号")]
-
-        # 最終的にできる文章たち
-        generated_texts = []
-        # 指定の数だけ作成する
-        for i in range(self.n):
-            text = self._generate_sentence(con, keys, base_keys)
-            generated_texts.append(text)
-        # print(generated_texts)
         most_counts = None
-        for i in generated_texts:
-            count = 0
-            if not keys:
-                count += i.count(content)
-            for k in keys:
-                count += i.count(k)
-            if not most_counts or most_counts[1] < count:
-                most_counts = (i, count)
+        loop = 0
+
+        def func():
+            global most_counts, loop
+            # 最終的にできる文章たち
+            generated_texts = []
+            # 指定の数だけ作成する
+            for i in range(self.n):
+                text = self._generate_sentence(con, keys, base_keys)
+                generated_texts.append(text)
+            # print(generated_texts)
+            most_counts = None
+            for i in generated_texts:
+                count = 0
+                if not keys:
+                    count += i.count(content)
+                for k in keys:
+                    count += i.count(k)
+                if not most_counts or most_counts[1] < count:
+                    most_counts = (i, count)
+            loop += 1
         # DBクローズ
         con.close()
-        if low and not self.loop > 5:
+        if low and not loop > 5:
             if wadai:
                 if most_counts[1] == 0:
                     return self.generate(content, low=low, _wadai=wadai)
@@ -133,7 +138,7 @@ class GenerateText(object):
                     return result
             except IndexError:
                 pass
-        for x in range(100):
+        for x in range(50):
             morphemes = self.generate_index(con)
             # 連結
             result = "".join([i for i in morphemes[:-1]])

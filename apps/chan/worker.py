@@ -111,7 +111,7 @@ class Worker(BaseWorker):
         self.say_b_a = {}
         self.hello_channel_ids = {}
         self.user_nick = {}
-        self.generator = GenerateText(n=5)
+        self.generator = GenerateText(n=8)
         self.log_channel = None
         self.not_rlearn_channel = []
         self.is_shiritori = []
@@ -371,7 +371,7 @@ class Worker(BaseWorker):
         #     chain = PrepareChain(content)
         #     triplet_freqs = chain.make_triplet_freqs()
         #     chain.save(triplet_freqs)
-        generated = self.generator.generate(message.content, _wadai=self.wadai, low=True)
+        generated = self.generator.generate(content, _wadai=self.wadai, low=True)
         content = generated[0]
         self.wadai = generated[1]
         print(self.wadai)

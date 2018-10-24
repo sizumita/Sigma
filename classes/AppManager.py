@@ -21,6 +21,7 @@ class AppManager(object):
         self.agree_users = []
 
     async def set_up(self):
+        await self.client.wait_until_ready()
         self.app_list = [file for file in os.listdir(app_path) if os.path.isdir(app_path + file)]
         for app_name in self.app_list:
             try:

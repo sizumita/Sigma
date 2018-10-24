@@ -17,7 +17,7 @@ class MyClient(discord.Client):
     def __init__(self, **options):
         super().__init__(**options)
         self.logger = None
-        self.app_manager = None
+        self.app_manager = AppManager.AppManager(self)
         self.error = None
         self.delete_check = []
         self.useing = []
@@ -58,10 +58,8 @@ class MyClient(discord.Client):
         print(client.is_closed())
         print('------')
         await client.change_presence(activity=discord.Game(name='すみどらちゃん: sigma'))
-        self.app_manager = AppManager.AppManager(client)
         self.logger = logger(self)
         self.error = self.get_channel(497046680806621184)
-        await self.app_manager.set_up()
         self.running = True
         try:
             with open('./logs/system_ban.txt', 'r') as f:
@@ -74,7 +72,6 @@ class MyClient(discord.Client):
     async def on_message(self, message: discord.Message):
         if not self.running:
             return
-        await client.wait_until_ready()
         global users
         if message.author.id == 212513828641046529:
             if message.content == "sigma rc":
@@ -145,6 +142,7 @@ class MyClient(discord.Client):
             trace = traceback.format_exc()
             # await self.get_channel(497046680806621184).send(trace)
             raise
+
     async def on_member_join(self, member: discord.Member):
         await self.app_manager.member_join(member)
 
@@ -234,7 +232,7 @@ def get_user(uid: int) -> User:
 
 
 client = MyClient()
-
+client.loop.create_task(client.app_manager.set_up())
 dotenv_path = join(dirname(__file__), '../sigma.env')
 load_dotenv(dotenv_path)
 client.run(os.environ.get("TOKEN"))
