@@ -111,7 +111,7 @@ class Worker(BaseWorker):
         self.say_b_a = {}
         self.hello_channel_ids = {}
         self.user_nick = {}
-        self.generator = GenerateText(n=8)
+        self.generator = GenerateText(n=5)
         self.log_channel = None
         self.not_rlearn_channel = []
         self.is_shiritori = []
@@ -402,6 +402,12 @@ class Worker(BaseWorker):
 
         def pred(m):
             return m.author == message.author and m.channel == message.channel
+
+        if message.clean_content.startswith("@すみどらちゃん "):
+            _content = self.generator.generate(message.clean_content[9:])
+            if _content:
+                await message.channel.send(_content)
+            return True
         if message.content.startswith("すみどらちゃん"):
             await message.channel.send("なあに？\n(わからなかったら何ができる？って聞いてね)")
             try:
@@ -409,7 +415,7 @@ class Worker(BaseWorker):
             except asyncio.TimeoutError:
                 await message.channel.send("用事がないなら帰るね！")
                 return False
-            content = mess.content
+            content = mess.clean_content
             channel = mess.channel
             guild = message.guild
 

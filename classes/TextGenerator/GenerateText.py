@@ -17,11 +17,6 @@ else:
 class GenerateText(object):
 
     def __init__(self, n=5, db=None):
-        u"""
-        初期化メソッド
-        @param n いくつの文章を生成するか
-        """
-        self.loop = 0
         self.db = db if db else PrepareChain.DB_PATH
         self.n = n
         self.dic_url = "./datas/userdic.csv"
@@ -31,8 +26,7 @@ class GenerateText(object):
         self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
 
     def generate(self, content, *, low=False, _wadai=""):
-        self.loop += 1
-        u"""
+        """
         実際に生成する
         @return 生成された文章
         """
@@ -69,14 +63,11 @@ class GenerateText(object):
         most_counts = None
 
         def func():
-            # global most_counts, loop
-            # 最終的にできる文章たち
             generated_texts = []
             # 指定の数だけ作成する
             for i in range(self.n):
                 text = self._generate_sentence(con, keys, base_keys)
                 generated_texts.append(text)
-            # print(generated_texts)
             _most_counts = None
             for i in generated_texts:
                 count = 0
@@ -88,7 +79,7 @@ class GenerateText(object):
                     _most_counts = (i, count)
             return _most_counts
         # DBクローズ
-        for x in range(5):
+        for x in range(self.n):
             most_counts = func()
             if low and wadai:
                 if most_counts[1] == 0:
@@ -103,8 +94,7 @@ class GenerateText(object):
 
         # はじまりを取得
         first_triplet = self._get_first_triplet(con)
-        morphemes.append(first_triplet[1])
-        morphemes.append(first_triplet[2])
+        morphemes = [first_triplet[1], first_triplet[2]] + morphemes
 
         # 文章を紡いでいく
         while morphemes[-1] != PrepareChain.END:
@@ -116,18 +106,15 @@ class GenerateText(object):
         return morphemes
 
     def _generate_sentence(self, con, keys, base_keys):
-        u"""
+        """
         ランダムに一文を生成する
         @param con DBコネクション
         @return 生成された1つの文章
         """
         result = ""
 
-        # print([i.surface for i in data])
-        # print([i.part_of_speech for i in data])
-
-        for x in range(50):
-            morphemes = self.generate_index(con)
+        morphemes_ = [self.generate_index(con) for i in range(50)]
+        for morphemes in morphemes_:
             # 連結
             result = "".join([i for i in morphemes[:-1]])
             r = self.t.tokenize(result)
@@ -138,9 +125,8 @@ class GenerateText(object):
                     return result
             except IndexError:
                 pass
-        for x in range(50):
-            morphemes = self.generate_index(con)
-            # 連結
+
+        for morphemes in morphemes_:
             result = "".join([i for i in morphemes[:-1]])
             for key in base_keys:
                 if key in result:
@@ -191,7 +177,7 @@ class GenerateText(object):
         return (triplet["prefix1"], triplet["prefix2"], triplet["suffix"])
 
     def _get_triplet(self, con, prefix1, prefix2):
-        u"""
+        """
         prefix1とprefix2からsuffixをランダムに取得する
         @param con DBコネクション
         @param prefix1 1つ目のprefix
@@ -210,7 +196,7 @@ class GenerateText(object):
         return (triplet["prefix1"], triplet["prefix2"], triplet["suffix"])
 
     def _get_probable_triplet(self, chains):
-        u"""
+        """
         チェーンの配列の中から確率的に1つを返す
         @param chains チェーンの配列
         @return 確率的に選んだ3つ組
@@ -224,14 +210,6 @@ class GenerateText(object):
                 probability.append(index)
 
         # ランダムに1つを選ぶ
-        # print(probability)
         chain_index = random.choice(probability)
 
         return chains[chain_index]
-
-
-if __name__ == '__main__':
-    generator = GenerateText()
-    print(generator.generate("a"))
-
-

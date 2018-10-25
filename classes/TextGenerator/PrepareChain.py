@@ -4,8 +4,6 @@
 与えられた文書からマルコフ連鎖のためのチェーン（連鎖）を作成して、DBに保存するファイル
 """
 
-import unittest
-
 import re
 import sqlite3
 from collections import defaultdict
@@ -13,7 +11,7 @@ from janome.tokenizer import Tokenizer
 
 
 class PrepareChain(object):
-    u"""
+    """
     チェーンを作成してDBに保存するクラス
     """
 
@@ -35,7 +33,7 @@ class PrepareChain(object):
         self.t = Tokenizer(self.dic_url, udic_type="simpledic", udic_enc="utf8")
 
     def make_triplet_freqs(self):
-        u"""
+        """
         形態素解析から3つ組の出現回数まで
         @return 3つ組とその出現回数の辞書 key: 3つ組（タプル） val: 出現回数
         """
@@ -142,12 +140,4 @@ class PrepareChain(object):
         # コミットしてクローズ
         con.commit()
         con.close()
-
-    def show(self, triplet_freqs):
-        u"""
-        3つ組毎の出現回数を出力する
-        @param triplet_freqs 3つ組とその出現回数の辞書 key: 3つ組（タプル） val: 出現回数
-        """
-        for triplet in triplet_freqs:
-            print("|".join(triplet), "\t", triplet_freqs[triplet])
 
