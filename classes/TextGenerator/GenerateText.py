@@ -68,7 +68,8 @@ class GenerateText(object):
             for i in range(self.n):
                 text = self._generate_sentence(con, keys, base_keys)
                 generated_texts.append(text)
-            _most_counts = None
+            _most_counts = ("", 0)
+            print(generated_texts)
             for i in generated_texts:
                 count = 0
                 if not keys:
