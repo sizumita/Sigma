@@ -202,11 +202,11 @@ class MyClient(discord.Client):
             return
 
     async def check(self, message: discord.Message):
-        try:
-            if not message.guild.me.guild_permissions.administrator:
-                return True
-        except:
-            pass
+        # try:
+        #     if not message.guild.me.guild_permissions.administrator:
+        #         return True
+        # except:
+        #     pass
         if message.author.id in self.system_ban_id:
             return True
         if message.author.bot:

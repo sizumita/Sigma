@@ -69,7 +69,6 @@ class GenerateText(object):
                 text = self._generate_sentence(con, keys, base_keys)
                 generated_texts.append(text)
             _most_counts = ("", 0)
-            print(generated_texts)
             for i in generated_texts:
                 count = 0
                 if not keys:
@@ -85,6 +84,8 @@ class GenerateText(object):
             if low and wadai:
                 if most_counts[1] == 0:
                     continue
+            if low and most_counts[1] == 0:
+                continue
             break
         con.close()
         return [most_counts[0], wadai]
