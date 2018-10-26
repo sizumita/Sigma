@@ -332,36 +332,38 @@ class Worker(BaseWorker):
             if message:
                 message_ids.append((message.id, channel.id))
             key = create_key()
-            async with aiohttp.ClientSession() as session:
-                for hook_url in self.webhooks:
-                    try:
 
-                        if self.data[hook_url] == channel.id:
-                            continue
-                        webhook = Webhook.from_url(hook_url, adapter=AsyncWebhookAdapter(session))
-                        webhook._adapter.store_user = webhook._adapter._store_user
-                        webhook_message = await webhook.send(
-                                           content,
-                                           username=f'{username} at {key}',
-                                           avatar_url=author.avatar_url,
-                                           embed=embed if embed else None,
-                                           wait=True
-                        )
-                        message_ids.append((webhook_message.id, self.data[hook_url]))
-                        self.messages[key] = {
-                            "ids": message_ids,
-                            "embed": embed,
-                            "message": message.id if message else None,
-                            "channel": channel.id,
-                            "guild": guild.id,
-                            "author": author.id,
-                            "content": content,
-                            "reactions": "",
-                            "reaction_users": {},
-                            "reaction_messages": {},
-                        }
-                    except discord.errors.NotFound:
-                        pass
+            async def send(webhook_url):
+                async with aiohttp.ClientSession() as session:
+                    webhook = Webhook.from_url(webhook_url, adapter=AsyncWebhookAdapter(session))
+                    webhook._adapter.store_user = webhook._adapter._store_user
+                    webhook_message = await webhook.send(
+                        content,
+                        username=f'{username} at {key}',
+                        avatar_url=author.avatar_url,
+                        embed=embed if embed else None,
+                        wait=True
+                    )
+                    message_ids.append((webhook_message.id, self.data[hook_url]))
+            for hook_url in self.webhooks:
+                try:
+                    if self.data[hook_url] == channel.id:
+                        continue
+                    self.client.loop.create_task(send(hook_url))
+                except discord.errors.NotFound:
+                    pass
+            self.messages[key] = {
+                "ids": message_ids,
+                "embed": embed,
+                "message": message.id if message else None,
+                "channel": channel.id,
+                "guild": guild.id,
+                "author": author.id,
+                "content": content,
+                "reactions": "",
+                "reaction_users": {},
+                "reaction_messages": {},
+            }
             if not guild.id in self.speak_data.keys():
                 self.speak_data[guild.id] = 1
                 return True
