@@ -76,8 +76,8 @@ class App:
                     if desc_match:
                         desc += desc_match.group(0).replace("\\", "\n")
                         continue
-                command = Command(prefix, arguments, look, desc)
-                self.dict_data["command"].append(command)
+                _command = Command(prefix, arguments, look, desc, )
+                self.dict_data["command"].append(_command)
         for key, value in self.dict_data.items():
             setattr(self, key, value)
         if self.is_continue:
@@ -88,4 +88,7 @@ class App:
 
     def __str__(self):
         return self.name
+
+    def commands(self):
+        return self.command
 

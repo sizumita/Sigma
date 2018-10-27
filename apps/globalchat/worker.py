@@ -334,17 +334,20 @@ class Worker(BaseWorker):
             key = create_key()
 
             async def send(webhook_url):
-                async with aiohttp.ClientSession() as session:
-                    webhook = Webhook.from_url(webhook_url, adapter=AsyncWebhookAdapter(session))
-                    webhook._adapter.store_user = webhook._adapter._store_user
-                    webhook_message = await webhook.send(
-                        content,
-                        username=f'{username} at {key}',
-                        avatar_url=author.avatar_url,
-                        embed=embed if embed else None,
-                        wait=True
-                    )
-                    message_ids.append((webhook_message.id, self.data[hook_url]))
+                try:
+                    async with aiohttp.ClientSession() as session:
+                        webhook = Webhook.from_url(webhook_url, adapter=AsyncWebhookAdapter(session))
+                        webhook._adapter.store_user = webhook._adapter._store_user
+                        webhook_message = await webhook.send(
+                            content,
+                            username=f'{username} at {key}',
+                            avatar_url=author.avatar_url,
+                            embed=embed if embed else None,
+                            wait=True
+                        )
+                        message_ids.append((webhook_message.id, self.data[hook_url]))
+                except discord.errors.NotFound:
+                    pass
             for hook_url in self.webhooks:
                 try:
                     if self.data[hook_url] == channel.id:
