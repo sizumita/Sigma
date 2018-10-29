@@ -127,7 +127,6 @@ class Worker(BaseWorker):
         return True
 
     async def load(self):
-        self.log_channel = self.client.get_channel(502394237589913600)
         try:
             async with aiofiles.open('./datas/say.pickle', 'rb') as f:
                 self.say_b_a = pickle.loads(await f.read())
@@ -143,6 +142,7 @@ class Worker(BaseWorker):
                 self.hello_channel_ids = pickle.loads(await f.read())
         except (FileNotFoundError, EOFError):
             print(-1)
+        self.log_channel = self.client.get_channel(502394237589913600)
 
     @owner_only
     async def get_data(self, message: discord.Message):
@@ -345,6 +345,15 @@ class Worker(BaseWorker):
         if command == "!data":
             await self.get_data(message)
             return True
+        if command == ":calc":
+            try:
+                text = "".join(args)
+                groups = re.search("(\d+),(\d+)(.+)", text).groups()
+                r = eval(f"{groups[0]} {groups[2]} {groups[1]}")
+            except:
+                await message.channel.send("計算エラー")
+                raise
+            await message.channel.send(r)
 
     async def dialogue(self, message: discord.Message):
 

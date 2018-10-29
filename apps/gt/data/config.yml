@@ -1,0 +1,3 @@
+description: 'Game Testです。本ゲーム開始時削除されます。'
+continue: False
+commands: ['!gt']
