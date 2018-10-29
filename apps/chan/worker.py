@@ -346,14 +346,25 @@ class Worker(BaseWorker):
             await self.get_data(message)
             return True
         if command == ":calc":
+            calcs = {
+                '*': lambda a, b: a * b,
+                '/': lambda a, b: a / b,
+                '-': lambda a, b: a - b,
+                '+': lambda a, b: a + b,
+            }
+            result = []
             try:
-                text = "".join(args)
-                groups = re.search("(\d+),(\d+)(.+)", text).groups()
-                r = eval(f"{groups[0]} {groups[2]} {groups[1]}")
+                for x in range(len(args)):
+                    if not args[x] in ['*', '/', '+', '-']:
+                        result.append(int(args[x]))
+                        continue
+                    c = calcs[args[x]](result[-2], result[-1])
+                    del result[-2:]
+                    result.append(c)
             except:
                 await message.channel.send("計算エラー")
                 raise
-            await message.channel.send(r)
+            await message.channel.send(result)
 
     async def dialogue(self, message: discord.Message):
 
