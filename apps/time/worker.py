@@ -33,12 +33,12 @@ class Worker(BaseWorker):
         channel = message.channel
         if command == "!timer":
             if not args[0]:
-                channel.send("時間を指定してください！")
+                await channel.send("時間を指定してください！")
                 return False
             try:
                 num = int(args[0])
             except ValueError:
-                channel.send("数字で指定してください！")
+                await channel.send("数字で指定してください！")
                 return False
             timer[timer_num] = {'time': num, 'id': message.author.id, 'def': num}
             await channel.send(f"{num}分のタイマーを開始しました。")
