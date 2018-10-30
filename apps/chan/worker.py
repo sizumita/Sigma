@@ -349,14 +349,15 @@ class Worker(BaseWorker):
         if command == ":calc":
             calcs = {
                 # l: list, (計算結果, 計算に使った数字の個数)
-                '*': lambda l: (l[0] * l[1], 2),
-                '/': lambda l: (l[0] / l[1], 2),
-                '-': lambda l: (l[0] - l[1], 2),
-                '+': lambda l: (l[0] + l[1], 2),
-                '**': lambda l: (l[0] ** l[1], 2),
+                '*': lambda l: (l[1] * l[0], 2),
+                '/': lambda l: (l[1] / l[0], 2),
+                '-': lambda l: (l[1] - l[0], 2),
+                '+': lambda l: (l[1] + l[0], 2),
+                '**': lambda l: (l[1] ** l[0], 2),
                 'sin': lambda l: (math.sin(l[0]), 1),
                 'cos': lambda l: (math.cos(l[0]), 1),
                 'tan': lambda l: (math.tan(l[0]), 1),
+                'sqrt': lambda l: (math.sqrt(l[0]), 1),
             }
             result = []
             try:
