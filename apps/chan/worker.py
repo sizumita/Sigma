@@ -8,6 +8,7 @@ import asyncio
 import pickle
 import random
 import aiofiles
+import math
 from classes.TextGenerator.PrepareChain import PrepareChain
 from classes.TextGenerator.GenerateText import GenerateText
 from classes.Wikipedia import search_word
@@ -347,24 +348,30 @@ class Worker(BaseWorker):
             return True
         if command == ":calc":
             calcs = {
-                '*': lambda a, b: a * b,
-                '/': lambda a, b: a / b,
-                '-': lambda a, b: a - b,
-                '+': lambda a, b: a + b,
+                # l: list, (計算結果, 計算に使った数字の個数)
+                '*': lambda l: (l[0] * l[1], 2),
+                '/': lambda l: (l[0] / l[1], 2),
+                '-': lambda l: (l[0] - l[1], 2),
+                '+': lambda l: (l[0] + l[1], 2),
+                '**': lambda l: (l[0] ** l[1], 2),
+                'sin': lambda l: (math.sin(l[0]), 1),
+                'cos': lambda l: (math.cos(l[0]), 1),
+                'tan': lambda l: (math.tan(l[0]), 1),
             }
             result = []
             try:
-                for x in range(len(args)):
-                    if not args[x] in ['*', '/', '+', '-']:
-                        result.append(int(args[x]))
+                for x in args:
+                    if x in calcs.keys():
+                        c = calcs[x](result[::-1])
+                        del result[-1 * c[1]:]
+                        result.append(c[0])
                         continue
-                    c = calcs[args[x]](result[-2], result[-1])
-                    del result[-2:]
-                    result.append(c)
+                    result.append(float(x) if "." in x else int(x))
+                    continue
             except:
                 await message.channel.send("計算エラー")
                 raise
-            await message.channel.send(result)
+            await message.channel.send(result[0])
 
     async def dialogue(self, message: discord.Message):
 
