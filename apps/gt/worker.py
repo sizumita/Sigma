@@ -65,7 +65,11 @@ class Worker(BaseWorker):
             return
         for d in data.split("\n"):
             x = d.split(",")
-            self.data[int(x[0])] = int(x[1])
+            print(x)
+            try:
+                self.data[int(x[0])] = int(x[1])
+            except:
+                pass
 
     async def join(self, message: discord.Message):
         await message.channel.send(help_text)
