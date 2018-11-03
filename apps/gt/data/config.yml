@@ -1,3 +1,3 @@
 description: 'Game Testです。本ゲーム開始時削除されます。'
 continue: True
-commands: ['.dip', '.register', '.bal', '.roul']
+commands: ['.dip', '.register', '.bal', '.roul', '.gt']

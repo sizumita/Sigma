@@ -68,7 +68,7 @@ class Worker(BaseWorker):
             self.data[int(x[0])] = int(x[1])
 
     async def join(self, message: discord.Message):
-        message.channel.send(help_text)
+        await message.channel.send(help_text)
 
     async def command(self, message: discord.Message, command: str, args: list, point: int):
         try:
