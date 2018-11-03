@@ -20,7 +20,7 @@ commands:
 
 .bal ->所持金を見ます
 
-.dip ->Sigma pointをカジノコインに変換します。1point->10coin
+.dip [point数] ->Sigma pointをカジノコインに変換します。1point->10coin
 
 .roul [掛け金] [flag(後述)] -> ルーレットを回します。
 
@@ -127,6 +127,15 @@ class Worker(BaseWorker):
                                                f"コインを入手した！")
                     get_price = get_price * r[0] * (roul_num ** 2)
                 self.data[message.author.id] += get_price
+                if get_price >= 1000000:
+                    guild = self.client.get_guild(499345248359809026)
+                    channel = self.client.get_channel(499345248359809028)
+                    await self.client.app_manager.continue_app['globalchat'].send_webhook(
+                        guild, channel, self.client.user, f"{message.author.name}さんが、ルーレットで{get_price}コインを獲得しました！", [],
+                        is_ad=True,
+                        is_embed=True
+                    )
+                await asyncio.sleep(10800)
         except ValueError:
             await message.channel.send("金額指定は数字でおこなってください。")
 

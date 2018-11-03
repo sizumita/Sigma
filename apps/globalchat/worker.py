@@ -322,6 +322,7 @@ class Worker(BaseWorker):
                         embed = discord.Embed()
                         embed.set_image(url=attachments[0].url)
                     if is_embed:
+                        embed = discord.Embed()
                         embed.description = content
                 except:
                     pass
@@ -339,7 +340,7 @@ class Worker(BaseWorker):
                         webhook = Webhook.from_url(webhook_url, adapter=AsyncWebhookAdapter(session))
                         webhook._adapter.store_user = webhook._adapter._store_user
                         webhook_message = await webhook.send(
-                            content,
+                            content if not is_embed else None,
                             username=f'{username} at {key}',
                             avatar_url=author.avatar_url,
                             embed=embed if embed else None,
@@ -493,7 +494,7 @@ class Worker(BaseWorker):
                                 channel_id = value[1]['reaction_messages'][channel.id]
                                 delete_message = await channel.get_message(channel_id)
                                 await delete_message.delete()
-                                self.messages[value[0]]['reaction_messages'][channel.id] = message
+                                self.messages[value[0]]['reaction_messages'][channel.id] = message.id
                             except (AttributeError, discord.errors.Forbidden):
                                 pass
                     else:
