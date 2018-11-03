@@ -6,10 +6,12 @@ import asyncio
 flag_choices = {
     "-h": lambda x, y: 1.5 if y > 30 else False,
     "-l": lambda x, y: 1.5 if y <= 30 else False,
-    "multi": lambda x, y: 1.7 + 0.1 * x[1] if y % x[1] == 0 else False,
-    "divis": lambda x, y: 2 if y % x[1] == 0 else False,
+    "-mul": lambda x, y: 1.7 + 0.1 * x[1] if y % x[1] == 0 and x[1] != 1 else False,
+    "-div": lambda x, y: 2 if y % x[1] == 0 and x[1] != 1 else False,
+    "-": lambda x, y: 50 if x[1] == y else False,
 }
-"""
+help_text = """
+```
 Sigma Casino Test
 
 commands:
@@ -19,6 +21,33 @@ commands:
 .bal ->所持金を見ます
 
 .dip ->Sigma pointをカジノコインに変換します。1point->10coin
+
+.roul [掛け金] [flag(後述)] -> ルーレットを回します。
+
+roulについて
+roulには、様々なチャンスがあります。
+1,BIG CHANCE
+BIG CHANCEが出ると、もらえるコイン数が５倍になります。連続で回せば回した回数だけ5倍になります。
+
+2,連続ルーレット
+連続で回すと、もらえるコイン数が回した回数の2乗を掛けて計算されます！
+2回だと2倍、4回だと16倍と増えていきます！
+
+flag について
+flagは、複数指定することができます。複数指定する際はフラグとフラグの間に半角空白を入れてください。
+flagの指定した数が、連続して回す回数です。
+flag list:
+
+-h -> Highです。30より上であればあたりです。x1.5
+
+-l -> Lowです。30以下であればあたりです。x1.5
+
+-mul:[数字] -> 数字が、でた数の倍数であればあたりです。基本1.5倍,数字が大きければ大きいほど倍率が上がります。
+
+-div:[数字] -> 数字が、出た数の約数であればあたりです。x2
+
+-:[数字] -> 数字が、出た数と同じであればあたりです。x50
+```
 """
 
 
@@ -38,8 +67,10 @@ class Worker(BaseWorker):
             x = d.split(",")
             self.data[int(x[0])] = int(x[1])
 
+    async def join(self, message: discord.Message):
+        message.channel.send(help_text)
+
     async def command(self, message: discord.Message, command: str, args: list, point: int):
-        print(self.data)
         try:
             if command == ".dip":
                 add_point = int(args[0])
@@ -92,9 +123,9 @@ class Worker(BaseWorker):
                     if big_chance:
                         get_price *= 5
                     await message.channel.send(f"{r[1]}が出た！\nあたり！\n"
-                                               f"連続{roul_num}回目！倍率{roul_num * 2}倍！{get_price * r[0] * roul_num * 2}"
+                                               f"連続{roul_num}回目！倍率{roul_num ** 2}倍！{get_price * r[0] * roul_num * 2}"
                                                f"コインを入手した！")
-                    get_price = get_price * r[0] * roul_num * 2
+                    get_price = get_price * r[0] * (roul_num ** 2)
                 self.data[message.author.id] += get_price
         except ValueError:
             await message.channel.send("金額指定は数字でおこなってください。")
@@ -109,7 +140,6 @@ class Worker(BaseWorker):
             except ValueError:
                 i = x
             params.append(i)
-        print(params)
 
         if params[0] in flag_choices.keys():
             r = flag_choices[params[0]](params, choice)
