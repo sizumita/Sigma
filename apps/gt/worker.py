@@ -126,7 +126,7 @@ class Worker(BaseWorker):
                                                f"連続{roul_num}回目！倍率{roul_num ** 2}倍！{get_price * r[0] * roul_num * 2}"
                                                f"コインを入手した！")
                     get_price = get_price * r[0] * (roul_num ** 2)
-                self.data[message.author.id] += get_price
+                self.data[message.author.id] += int(get_price)
                 if get_price >= 1000000:
                     guild = self.client.get_guild(499345248359809026)
                     channel = self.client.get_channel(499345248359809028)
