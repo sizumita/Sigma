@@ -90,7 +90,8 @@ class Worker(BaseWorker):
         super().__init__(client)
         client.loop.create_task(self.load())
         client.loop.create_task(self.tips())
-        client.loop.create_task(self.ad())
+        # client.loop.create_task(self.ad())
+    #     TODO: AD機能をみんなの様子を見て復活させるか決める
 
     async def load(self):
         try:
@@ -129,6 +130,9 @@ class Worker(BaseWorker):
                 await self.client.get_channel(channel).send("sigma OS 起動します...")
             except (AttributeError, discord.errors.Forbidden):
                 pass
+        for key, value in self.data.items():
+            if not self.client.get_channel(value):
+                del self.webhooks[key]
 
     async def join(self, message: discord.Message):
         await message.channel.send(help_message)
@@ -146,9 +150,6 @@ class Worker(BaseWorker):
             return True
         if message.channel.name == "global-chat":
             await self._connect(message)
-            return True
-        if message.channel.name == "global-r18":
-            await self._connect(message, is_r18=True)
             return True
 
     async def logout(self):
@@ -198,6 +199,21 @@ class Worker(BaseWorker):
                 self.nick[message.author.id] = nick
                 await message.channel.send(f"ニックネーム:{nick}　で保存されました。")
 
+            if args[0] == "notice":
+                if not message.author.id == 212513828641046529:
+                    return
+                del args[0]
+                content = " ".join(args)
+                for webhook_url in self.webhooks:
+                    async with aiohttp.ClientSession() as session:
+                        webhook = Webhook.from_url(webhook_url, adapter=AsyncWebhookAdapter(session))
+                        webhook._adapter.store_user = webhook._adapter._store_user
+                        await webhook.send(
+                            content,
+                            username=message.author.name,
+                            avatar_url=message.author.avatar_url,
+                        )
+
         elif command == "?g":
             channel = message.channel
             try:
@@ -232,6 +248,11 @@ class Worker(BaseWorker):
             await message.channel.send(embed=embed)
 
         elif command == "!ad":
+            i = 0
+            if not i:
+                await message.channel.send("この機能は運用を終了しました。")
+                return
+
             if not args:
                 await message.channel.send(ad_help.format(point))
                 return True
@@ -265,7 +286,7 @@ class Worker(BaseWorker):
                     await m.channel.send("もう一度最初からやり直してください。")
                     return True
                 await channel.send("全ての設定が完了しました！６回広告が表示されます！")
-                self.ads[message.author.id] = {"content": mess.content.replace("@", "＠"), "count": 6}
+                # self.ads[message.author.id] = {"content": mess.content.replace("@", "＠"), "count": 6}
                 return -800
 
     async def _connect(self, message: discord.Message, *, is_r18=False):
@@ -280,7 +301,6 @@ class Worker(BaseWorker):
             self.channels.append(message.channel.id)
             self.webhooks.append(webhook.url)
             self.data[webhook.url] = message.channel.id
-            # print(self.data)
             await message.channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels)}")
             self.speak_data[message.guild.id] = 0
             return True
@@ -288,7 +308,6 @@ class Worker(BaseWorker):
             self.channels_r18.append(message.channel.id)
             self.webhooks_r18.append(webhook.url)
             self.data_r18[webhook.url] = message.channel.id
-            # print(self.data_r18)
             await message.channel.send(f"コネクトしました。コネクトチャンネル数:{len(self.channels_r18)}")
             return True
 
