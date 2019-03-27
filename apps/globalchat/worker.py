@@ -249,10 +249,6 @@ class Worker(BaseWorker):
             await message.channel.send(embed=embed)
 
         elif command == "!ad":
-            i = 0
-            if not i:
-                await message.channel.send("この機能は運用を終了しました。")
-                return
 
             if not args:
                 await message.channel.send(ad_help.format(point))
