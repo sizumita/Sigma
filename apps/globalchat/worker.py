@@ -54,6 +54,7 @@ tips = [
     "`sigma link`でSigma|すみどらちゃんのBOTの招待を受け取れます。",
     "Global Chat, Sigmaのコマンド類を利用するには、利用規約への同意が必要です。`sigma contract`で確認してください。",
     "Global Chatに、広告を載せたい場合は、`!ad`で。",
+    "\U0001f914\U0001f914\U0001f914\U0001f914\U0001f914\U0001f914",
 ]
 
 
