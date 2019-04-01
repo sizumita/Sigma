@@ -1,4 +1,5 @@
 import aiofiles
+import datetime
 import random
 from classes.baseworker import BaseWorker
 import pickle
@@ -349,6 +350,11 @@ class Worker(BaseWorker):
             if message:
                 message_ids.append((message.id, channel.id))
             key = create_key()
+            today = datetime.datetime.today()
+            if today.day == 1 and today.month == 4:
+                uname = f'村人 at {key}'
+            else:
+                uname = f'{username} at {key}'
 
             async def send(webhook_url):
                 try:
@@ -357,7 +363,7 @@ class Worker(BaseWorker):
                         webhook._adapter.store_user = webhook._adapter._store_user
                         webhook_message = await webhook.send(
                             content if not is_embed else None,
-                            username=f'{username} at {key}',
+                            username=uname,
                             avatar_url=author.avatar_url,
                             embed=embed if embed else None,
                             wait=True
