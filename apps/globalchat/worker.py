@@ -353,8 +353,10 @@ class Worker(BaseWorker):
             today = datetime.datetime.today()
             if today.day == 1 and today.month == 4:
                 uname = f'村人 at {key}'
+                aurl = "https://cdn.discordapp.com/attachments/494882667611815946/562114394914553863/4-1.png"
             else:
                 uname = f'{username} at {key}'
+                aurl = author.avatar_url
 
             async def send(webhook_url):
                 try:
@@ -364,7 +366,7 @@ class Worker(BaseWorker):
                         webhook_message = await webhook.send(
                             content if not is_embed else None,
                             username=uname,
-                            avatar_url=author.avatar_url,
+                            avatar_url=aurl,
                             embed=embed if embed else None,
                             wait=True
                         )
